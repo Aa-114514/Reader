@@ -65,7 +65,9 @@ function detectPageType(){
     var pDensity=totalLen>0?pTextLen/totalLen:0;
     var zhCount=(allText.match(/[\u4e00-\u9fa5]/g)||[]).length;
     var zhRatio=totalLen>0?zhCount/totalLen:0;
-    if(validLinks>=10&&density>0.4&&pDensity<0.3)return 'list';
+    var _chapNum=(allText.match(/第[\d一二三四五六七八九十百千]+[章节集回话]/g)||[]).length;
+if(_chapNum>=10&&totalLen<8000)return 'list';
+if(validLinks>=10&&density>0.4&&pDensity<0.3)return 'list';
     if(pDensity>0.5&&totalLen>500)return 'reader';
     if(zhRatio>0.5&&totalLen>800&&validLinks<80)return 'reader';
     if(validLinks>=15&&density>0.25)return 'list';
