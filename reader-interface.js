@@ -1,5 +1,5 @@
 (function(){
-var RDR_VER='20261012-9';
+var RDR_VER='20261012-11';
 var D=document,W=window;
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
@@ -145,9 +145,11 @@ ST+='html,body{overflow:hidden!important;margin:0!important;padding:0!important;
 var st=D.createElement('style');st.textContent=ST;D.head.appendChild(st);
 
 var O=D.createElement('div');O.id='R';
-O.innerHTML='<div id="T"><button class="bk">←</button><button class="fav" style="display:none">☆</button><button class="fm" style="display:none">⇄</button><span class="t"></span><button class="x">×</button></div><div id="B"></div><div id="NAV"><div data-v="shelf"><span class="ic">⭐</span><span>书架</span></div><div data-v="shuku"><span class="ic">📚</span><span>书库</span></div><div data-v="feed"><span class="ic">📡</span><span>订阅源</span></div><div data-v="setting"><span class="ic">⚙</span><span>设置</span></div></div><div id="MSK"></div><div id="RST">← 返回阅读（5）</div>';
+O.innerHTML='<div id="T"><button class="bk">←</button><button class="fav" style="display:none">☆</button><button class="fm" style="display:none">⇄</button><span class="t"></span><button class="x">×</button></div><div id="B"></div><div id="NAV"></div><div id="MSK"></div><div id="RST">← 返回阅读（5）</div>';
 D.body.appendChild(O);
 function Q(s){return D.querySelector(s)}
+function _rd(){return window.__rd||null}
+function _rdMod(n){var r=_rd();return r?(r.modules[n]||r.ctx[n]):null}
 O.addEventListener('touchmove',function(e){e.stopPropagation()},{passive:true});
 O.addEventListener('wheel',function(e){e.stopPropagation()},{passive:true});
 var _tapLog=[],_tapSaveT=null;
@@ -240,7 +242,28 @@ function toast(m){var t=D.getElementById('RTT');if(t&&t.parentNode)t.parentNode.
 function buildGradBg(){if(S.grad===1)return 'linear-gradient(90deg,'+S.gc1+','+S.gc2+')';if(S.grad===2){var h1=parseFloat(S.gh1)||0,h2=parseFloat(S.gh2)||360;if(h2<=h1)h2=h1+1;var stops=[];for(var i=0;i<=6;i++)stops.push('hsl('+(h1+(h2-h1)*i/6)+',100%,55%)');for(var j=5;j>=1;j--)stops.push('hsl('+(h1+(h2-h1)*j/6)+',100%,55%)');return 'linear-gradient(90deg,'+stops.join(',')+')';}return 'linear-gradient(90deg,'+S.gc1+','+S.gc2+')';}
 function theme(){O.className=(S.l?'light ':'');if(S.bgi)O.classList.add('withbg');if(S.grad)O.classList.add('gradon');if(S.grad===2)O.classList.add('rainbow');O.style.setProperty('--rbg',S.bg);O.style.setProperty('--rfg',S.fg);O.style.setProperty('--rbgi','url("'+S.bgi+'")');O.style.setProperty('--gs',(S.gs||6)+'s');O.style.setProperty('--grad-bg',buildGradBg());var _dim=O.querySelector('.rdr-dim');if(!_dim){_dim=D.createElement('div');_dim.className='rdr-dim';_dim.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:4;transition:background .15s';O.appendChild(_dim);}var _br=parseFloat(S.br);if(isNaN(_br)||_br>1)_br=1;if(_br<1)_dim.style.background='rgba(0,0,0,'+((1-_br)*0.75).toFixed(3)+')';else _dim.style.background='transparent';var _mmc=Q('.mmc');if(_mmc)_mmc.textContent=S.l?'🌙':'☀';var tm=D.querySelector('meta[name="theme-color"]');if(tm)tm.content=S.bg;}
 function setNav(v){var d=NAV.children;for(var i=0;i<d.length;i++)d[i].className=(d[i].getAttribute('data-v')===v)?'act':'';NAV.style.display=(v==='reader')?'none':'flex';var _fm=Q('.fm');if(_fm)_fm.style.display='none';}
-NAV.onclick=function(e){var t=e.target;while(t&&t!==NAV){if(t.getAttribute&&t.getAttribute('data-v'))break;t=t.parentNode}if(!t||t===NAV)return;var v=t.getAttribute('data-v');if(v==='shuku')viewShuku();else if(v==='shelf')viewShelf();else if(v==='feed')viewFeedList();else if(v==='setting')viewSetting();};
+var _rdNavItems=[];
+function rdNavAdd(id,order,icon,label,handler){
+  for(var i=0;i<_rdNavItems.length;i++)if(_rdNavItems[i].id===id){_rdNavItems[i].order=order;_rdNavItems[i].icon=icon;_rdNavItems[i].label=label;_rdNavItems[i].handler=handler;rdNavRender();return}
+  _rdNavItems.push({id:id,order:order,icon:icon,label:label,handler:handler});
+  rdNavRender();
+}
+function rdNavRender(){
+  _rdNavItems.sort(function(a,b){return a.order-b.order});
+  var h='';
+  for(var i=0;i<_rdNavItems.length;i++){var it=_rdNavItems[i];h+='<div data-v="'+it.id+'"><span class="ic">'+it.icon+'</span><span>'+it.label+'</span></div>'}
+  NAV.innerHTML=h;
+}
+window.__rdNavAdd=rdNavAdd;
+function rdHas(n){try{return typeof eval(n)==='function'}catch(e){return false}}
+window.__rdHas=rdHas;
+NAV.onclick=function(e){
+  var t=e.target;
+  while(t&&t!==NAV){if(t.getAttribute&&t.getAttribute('data-v'))break;t=t.parentNode}
+  if(!t||t===NAV)return;
+  var v=t.getAttribute('data-v');
+  for(var i=0;i<_rdNavItems.length;i++)if(_rdNavItems[i].id===v){_rdNavItems[i].handler();return}
+};
 
 function imgFavGet(){try{return JSON.parse(LSV('RDR_IMGFAV')||'[]')}catch(e){return[]}}
 function imgFavSave(a){try{LSV('RDR_IMGFAV',JSON.stringify(a))}catch(e){}}
@@ -283,7 +306,7 @@ function closeReader(){
   try{var kids=D.body.children;for(var i=0;i<kids.length;i++){var el=kids[i];if(el.id==='R'||el.tagName==='SCRIPT'||el.tagName==='STYLE')continue;try{el.style.removeProperty('display');el.style.removeProperty('visibility');el.style.removeProperty('pointer-events');if(el.getAttribute('style')==='')el.removeAttribute('style');}catch(e){}}}catch(e){}
   try{var tm=D.querySelector('meta[name="theme-color"]');if(tm){if(originalThemeCreated&&tm.parentNode)tm.parentNode.removeChild(tm);else if(originalTheme!=null)tm.setAttribute('content',originalTheme);else tm.removeAttribute('content');}}catch(e){}
   RC=null;
-  window.K=null;window.__RDR__=null;window.__rdRelayout=null;window.__rdCurImgData=null;window.__rdImgView=null;window.RDR_TTS_FILTER=null;window.__rdWantPg=null;
+  window.K=null;window.__RDR__=null;window.__rdRelayout=null;window.__rdCurImgData=null;window.__rdImgView=null;window.RDR_TTS_FILTER=null;window.__rdWantPg=null;window.__rdNavAdd=null;window.__rdHas=null;
   var cnt=5;
   RST.style.display='block';RST.textContent='← 返回阅读（'+cnt+'）';
   RST.onclick=function(){
