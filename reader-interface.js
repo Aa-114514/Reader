@@ -1,6 +1,6 @@
 (function(){
+var RDR_VER='20261012-1';
 var D=document,W=window;
-
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
 '#R.light #T{background:rgba(236,228,207,.92);color:#333;border-bottom-color:#d6ccb2}'+
