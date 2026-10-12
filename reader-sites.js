@@ -185,6 +185,7 @@ function routeFeedUrl(url){
   }
   return null;
 }
+function _missMod(m){try{toast('未加载'+m+'模块')}catch(e){alert('未加载'+m+'模块')}}
 function dispatchSite(pendingUrl){
   var prof=matchProfile();
   var _cat=prof?(prof.category||prof.type||''):'';
@@ -202,26 +203,29 @@ function dispatchSite(pendingUrl){
     setTimeout(function(){if(badge.parentNode)badge.parentNode.removeChild(badge)},2800);
   }
   var act=DISPATCH[_cat];
+  var _shuku=_rdMod('viewShuku'),_detail=_rdMod('viewDetail'),_read=_rdMod('readChapter'),_feed=_rdMod('viewFeed'),_article=_rdMod('viewArticle'),_imgRdr=_rdMod('startImageReader');
   if(pendingUrl){
-    if(act==='imageReader')return startImageReader('page');
-    if(act==='feed')return viewFeed(pendingUrl);
-    if(act==='shuku'||act==='detail'){viewShuku();setTimeout(runInfiniteGeneral,300);return}
-    if(FC())return viewArticle();
-    viewShuku();setTimeout(runInfiniteGeneral,300);return;
+    if(act==='imageReader'){if(!_imgRdr)return _missMod('阅读');return _imgRdr('page')}
+    if(act==='feed'){if(!_feed)return _missMod('订阅源');return _feed(pendingUrl)}
+    if(act==='shuku'||act==='detail'){if(!_shuku)return _missMod('阅读');_shuku();setTimeout(runInfiniteGeneral,300);return}
+    if(FC()){if(!_article)return _missMod('文章');return _article()}
+    if(!_shuku)return _missMod('阅读');
+    _shuku();setTimeout(runInfiniteGeneral,300);return;
   }
-  if(act==='imageReader')return startImageReader('page');
-  if(act==='feed')return viewFeed(location.href);
-  if(act==='shuku'){viewShuku();setTimeout(runInfiniteGeneral,300);return}
-  if(PT==='shuku'||PT==='search'||PT==='top'){viewShuku();if(PT==='search')setTimeout(runInfiniteGeneral,300);return}
-  if(PT==='list')return viewDetail(location.href);
-  if(PT==='article')return viewArticle();
+  if(act==='imageReader'){if(!_imgRdr)return _missMod('阅读');return _imgRdr('page')}
+  if(act==='feed'){if(!_feed)return _missMod('订阅源');return _feed(location.href)}
+  if(act==='shuku'){if(!_shuku)return _missMod('阅读');_shuku();setTimeout(runInfiniteGeneral,300);return}
+  if(PT==='shuku'||PT==='search'||PT==='top'){if(!_shuku)return _missMod('阅读');_shuku();if(PT==='search')setTimeout(runInfiniteGeneral,300);return}
+  if(PT==='list'){if(!_detail)return _missMod('阅读');return _detail(location.href)}
+  if(PT==='article'){if(!_article)return _missMod('文章');return _article()}
   var detect=detectPageType();
   if(detect==='reader'){
+    if(!_read)return _missMod('阅读');
     var title=(Q('h1')||{}).textContent||document.title||'阅读';
-    readChapter(location.href.split('#')[0],[{u:location.href.split('#')[0],t:title.slice(0,40)}]);
-  }else if(detect==='list'){viewShuku();setTimeout(runInfiniteGeneral,300);}
-  else if(isListPageByContent()){viewShuku();setTimeout(runInfiniteGeneral,300);}
-  else viewPickView();
+    _read(location.href.split('#')[0],[{u:location.href.split('#')[0],t:title.slice(0,40)}]);
+  }else if(detect==='list'){if(!_shuku)return _missMod('阅读');_shuku();setTimeout(runInfiniteGeneral,300);}
+  else if(isListPageByContent()){if(!_shuku)return _missMod('阅读');_shuku();setTimeout(runInfiniteGeneral,300);}
+  else{var _pick=_rdMod('viewPickView');if(!_pick)return _missMod('文章');_pick();}
 }
 
 window.RDR_TTS_FILTER=function(text,title){
