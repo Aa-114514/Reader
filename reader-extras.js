@@ -8,76 +8,53 @@ var ERR={
 };
 function err(c,x){return '['+c+'] '+(ERR[c]||'未知错误')+(x?(' · '+x):'');}
 
-/*
- * RDR 分段契约
- * ═══════════════════════════════════════════════════
- * 【reader-interface.js —— P1】
- *   环境: D, W, S, SV
- *   工具: escH, toast, LSV, CK
- *   存储: GB, SB, ISB, isSameHost, GT, ST_, PROG_SET, PROG_GET,
- *         cacheGet, cacheSet, cacheList, cacheClearAll,
- *         HIS_ADD, HIS_GET, HIS_CLEAR
- *   解析: FH, FC, pickMainContent, HT, TP, EXF
- *   净化: purifyAll, purifySave, purifyList, purifyText, purifyArray
- *   主题: theme, buildGradBg, setNav
- *   容器: O, Q, B, BK, NAV, RST, FAVBTN
- *   图片工具: imgView, imgFavGet, imgFavSave, imgFavHas, imgFavToggle
- *   阅读器关闭: closeReader
- *   清理定时器: ft
- *
- * 【reader-sites.js —— P2】
- *   站点表: SITE_SOURCE, SITE_PROFILES_INLINE, SITE_BUILTIN
- *   匹配: compileProfile, loadSiteProfilesSync, SITE_PROFILES,
- *         matchProfile, siteCategory, findType
- *   识别: detectPageType, isListPageByContent
- *   反广告: isAdLink, killAds, _mo, killAdsTimer
- *   路由: DISPATCH, routeFeedUrl, dispatchSite
- *   TTS过滤: window.RDR_TTS_FILTER
- *
- * 【reader-structure.js —— P3】
- *   阅读器: appendP, imgRelayoutT, readChapter, __rdRelayout
- *   书库: runInfiniteGeneral, pickThumb, viewShuku
- *   书架/详情: viewShelf, viewDetail
- *   订阅源: feedList, feedSave, viewFeedList, viewFeed
- *   图片模式: isRandomImgSite, isGalleryPage, getPageImages, startImageReader
- *   设置: viewSetting
- *   净化UI: viewPurify, purifyEdit
- *   其他: viewArticle, viewPickView
- *
- * 【reader-extras.js —— P4】
- *   错误码: ERR, err
- *   启动: boot()
- *   全局: window.__RDR__
- *
- * 扩展点
- * ─────
- *   window.RDR_TTS_FILTER(text, title) → bool  (P2 提供)
- *   window.__rdRelayout()             → void  (P3 提供)
- *   window.__rdWantPg                 → number|null  (P3 用于恢复目标页)
- *   window.__rdCurImgData             → object|null  (P3 供图片长按使用)
- *
- * 拼接顺序
- * ─────
- *   interface → sites → structure → extras
- *   P1 不闭合，P4 结尾 })();
- */
+/* RDR 契约 —— 见各文件头部注释 */
+
+window.__rd={
+  ver:RDR_VER,
+  ctx:{
+    D:D,W:W,O:O,Q:Q,B:B,BK:BK,NAV:NAV,RST:RST,FAVBTN:FAVBTN,
+    S:S,SV:SV,escH:escH,toast:toast,LSV:LSV,CK:CK,
+    GB:GB,SB:SB,ISB:ISB,isSameHost:isSameHost,GT:GT,ST_:ST_,PROG_SET:PROG_SET,PROG_GET:PROG_GET,
+    cacheGet:cacheGet,cacheSet:cacheSet,cacheList:cacheList,cacheClearAll:cacheClearAll,
+    HIS_ADD:HIS_ADD,HIS_GET:HIS_GET,HIS_CLEAR:HIS_CLEAR,
+    purifyAll:purifyAll,purifySave:purifySave,purifyList:purifyList,purifyText:purifyText,purifyArray:purifyArray,
+    FH:FH,FC:FC,pickMainContent:pickMainContent,HT:HT,TP:TP,EXF:EXF,
+    theme:theme,buildGradBg:buildGradBg,setNav:setNav,
+    imgView:imgView,imgFavGet:imgFavGet,imgFavSave:imgFavSave,imgFavHas:imgFavHas,imgFavToggle:imgFavToggle,
+    closeReader:closeReader,err:err,
+    isAdLink:isAdLink,matchProfile:matchProfile,siteCategory:siteCategory,routeFeedUrl:routeFeedUrl,
+    pickThumb:pickThumb,
+    viewArticle:viewArticle,viewPickView:viewPickView,
+    viewSetting:viewSetting,viewPurify:viewPurify,purifyEdit:purifyEdit,
+    startImageReader:startImageReader,isRandomImgSite:isRandomImgSite,isGalleryPage:isGalleryPage,getPageImages:getPageImages,
+    runInfiniteGeneral:runInfiniteGeneral
+  },
+  modules:{},
+  nav:rdNavAdd
+};
 
 function boot(){
   var pendingUrl=null;
   try{pendingUrl=LSV('RDR_PENDING_URL');if(pendingUrl)LSV('RDR_PENDING_URL','');}catch(e){}
   var resume=LSV('RDR_RESUME');
   try{LSV('RDR_RESUME','')}catch(e){}
+  var M=window.__rd.modules;
+  var hasRead=!!M.readChapter;
   if(resume==='1'){
     var last=null;
     try{last=JSON.parse(LSV('RDR_LAST')||'null')}catch(e){}
     if(last&&last.cat&&last.cat.length){
-  if(Date.now()-last.ts<30000){var _bu=last.bu||last.cu;readChapter(last.cu,last.cat,_bu,PROG_GET(_bu));}//__RDR_PATCH__
-  else viewShuku();
-}else viewShuku();
+      if(hasRead){
+        if(Date.now()-last.ts<30000){var _bu=last.bu||last.cu;M.readChapter(last.cu,last.cat,_bu,PROG_GET(_bu));}
+        else M.viewShuku();
+      }else viewSetting();
+    }else if(hasRead)M.viewShuku();
+    else viewSetting();
   }else{
     var jumpUrl=null;
     try{jumpUrl=LSV('RDR_JUMP_URL');if(jumpUrl)LSV('RDR_JUMP_URL','');}catch(e){}
-    if(jumpUrl)viewDetail(jumpUrl);
+    if(jumpUrl&&hasRead)M.viewDetail(jumpUrl);
     else dispatchSite(pendingUrl);
   }
 }
