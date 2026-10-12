@@ -1,5 +1,5 @@
 (function(){
-var RDR_VER='20261012-7';
+var RDR_VER='20261012-8';
 var D=document,W=window;
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
@@ -150,6 +150,51 @@ D.body.appendChild(O);
 function Q(s){return D.querySelector(s)}
 O.addEventListener('touchmove',function(e){e.stopPropagation()},{passive:true});
 O.addEventListener('wheel',function(e){e.stopPropagation()},{passive:true});
+var _tapLog=[],_tapSaveT=null;
+try{_tapLog=JSON.parse(localStorage.getItem('RDR_TAPLOG')||'[]')||[]}catch(e){_tapLog=[]}
+function _rdTapSave(){
+  if(_tapSaveT)return;
+  _tapSaveT=setTimeout(function(){
+    _tapSaveT=null;
+    try{localStorage.setItem('RDR_TAPLOG',JSON.stringify(_tapLog))}catch(e){
+      _tapLog=_tapLog.slice(-80);
+      try{localStorage.setItem('RDR_TAPLOG',JSON.stringify(_tapLog))}catch(e2){}
+    }
+  },400);
+}
+function _rdTap(ev){
+  try{
+    var t=ev.target;
+    if(!t||t.nodeType!==1)return;
+    if(t===D.documentElement||t===D.body)return;
+    var path=[],p=t,depth=0;
+    while(p&&p.nodeType===1&&p!==D.body&&depth<6){
+      var seg=p.tagName;
+      if(p.id)seg+='#'+p.id;
+      if(p.className&&typeof p.className==='string'){
+        var cs=p.className.split(/\s+/).filter(Boolean).slice(0,2);
+        if(cs.length)seg+='.'+cs.join('.');
+      }
+      path.push(seg);
+      p=p.parentNode;depth++;
+    }
+    var txt=(t.textContent||'').replace(/\s+/g,' ').trim().slice(0,40);
+    _tapLog.push({
+      t:Date.now(),
+      e:ev.type,
+      tg:t.tagName,
+      id:t.id||'',
+      cl:(typeof t.className==='string'?t.className.slice(0,80):''),
+      tx:txt,
+      pt:path.join(' < ')
+    });
+    if(_tapLog.length>200)_tapLog.shift();
+    _rdTapSave();
+  }catch(e){}
+}
+D.addEventListener('touchstart',_rdTap,{capture:true,passive:true});
+D.addEventListener('touchend',_rdTap,{capture:true,passive:true});
+D.addEventListener('click',_rdTap,{capture:true,passive:true});
 var B=Q('#B'),BK=Q('.bk'),NAV=Q('#NAV'),RST=Q('#RST'),FAVBTN=Q('.fav');
 
 function LSV(k,v){try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v);}catch(e){return null}}
