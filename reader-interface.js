@@ -1,5 +1,5 @@
 (function(){
-var RDR_VER='20261012-11';
+var RDR_VER='20261012-12';
 var D=document,W=window;
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
@@ -326,6 +326,7 @@ function closeReader(){
 }
 Q('.x').onclick=function(){closeReader()};
 
+var RC=null;
 var oh=D.documentElement.getAttribute('style')||'',ob=D.body.getAttribute('style')||'';
 var originalTheme=null,originalThemeCreated=false;
 (function(){var tm=D.querySelector('meta[name="theme-color"]');if(!tm){tm=D.createElement('meta');tm.name='theme-color';D.head.appendChild(tm);originalThemeCreated=true}else originalTheme=tm.getAttribute('content');})();
