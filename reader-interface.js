@@ -1,5 +1,5 @@
 (function(){
-var RDR_VER='20261012-3';
+var RDR_VER='20261012-4';
 var D=document,W=window;
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
@@ -236,7 +236,7 @@ function closeReader(){
   try{var kids=D.body.children;for(var i=0;i<kids.length;i++){var el=kids[i];if(el.id==='R'||el.tagName==='SCRIPT'||el.tagName==='STYLE')continue;try{el.style.removeProperty('display');el.style.removeProperty('visibility');el.style.removeProperty('pointer-events');if(el.getAttribute('style')==='')el.removeAttribute('style');}catch(e){}}}catch(e){}
   try{var tm=D.querySelector('meta[name="theme-color"]');if(tm){if(originalThemeCreated&&tm.parentNode)tm.parentNode.removeChild(tm);else if(originalTheme!=null)tm.setAttribute('content',originalTheme);else tm.removeAttribute('content');}}catch(e){}
   RC=null;
-  window.K=null;window.__RDR__=null;
+window.K=null;window.__RDR__=null;window.__rdRelayout=null;window.__rdCurImgData=null;window.__rdImgView=null;window.RDR_TTS_FILTER=null;window.__rdWantPg=null;//__RDR_PATCH__
   var cnt=5;
   RST.style.display='block';RST.textContent='← 返回阅读（'+cnt+'）';
   RST.onclick=function(){
