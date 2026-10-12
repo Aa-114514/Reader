@@ -31,7 +31,7 @@ var imgRelayoutT=null;
 
 function readChapter(chUrl,catalog,bookUrl,initProg){
   var bUrl=bookUrl||chUrl.split('#')[0];
-  setNav('reader');NAV.style.display='none';BK.style.display='block';FAVBTN.style.display='block';
+  setNav('reader');NAV.style.display='none';BK.style.display='none';FAVBTN.style.display='none';
   HIS_ADD(chUrl,(Q('h1')||{}).textContent||D.title||'章节');
   BK.onclick=function(){
     try{
@@ -155,8 +155,8 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
 
   function updateHead(){var n=Q('.hname'),p=Q('.hpos');if(n)n.textContent=cs[ci].t.slice(0,20);if(p)p.textContent='('+(pg+1)+'/'+tot+')';}
   function syncFav(){FAVBTN.textContent=ISB(bUrl)>=0?'★':'☆';FAVBTN.style.color=ISB(bUrl)>=0?'#ffc107':'';}
-  function showH(){pn=1;H.classList.add('open');MSK.style.display='block'}
-  function hideH(){pn=0;H.classList.remove('open');MSK.style.display='none'}
+  function showH(){pn=1;H.classList.add('open');MSK.style.display='block';BK.style.display='block';FAVBTN.style.display='block'}
+  function hideH(){pn=0;H.classList.remove('open');MSK.style.display='none';BK.style.display='none';FAVBTN.style.display='none'}
   function switchTab(name){
     var cur=H.querySelector('.tb.on');
     if(cur&&cur.getAttribute('data-tab')===name)name='';
@@ -381,7 +381,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     LSV('RDR_LAST',JSON.stringify({cu:c.u,ct:c.t,bu:bUrl,cat:catalog.slice(0,300),ts:Date.now()}));
     if(_initPg==null)PROG_SET(bUrl,{cu:c.u,ct:c.t,ci:i,pg:0,cat:catalog.slice(0,300),ts:Date.now()});
     HIS_ADD(c.u,c.t);
-    syncFav();
+    syncFav();BK.style.display='none';FAVBTN.style.display='none';
     FAVBTN.onclick=function(){
       var _idx=ISB(bUrl);
       if(_idx>=0){var _b=GB();_b.splice(_idx,1);SB(_b);}
