@@ -55,18 +55,29 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
       '<div style="font-size:12px;opacity:.6;line-height:1.6;padding:4px 2px">从当前页开始朗读，读完自动翻下一页</div>'+
     '</div>'+
     '<div class="sub sui" data-sub="ui">'+
-      '<div class="src"><label>字号</label><button class="fm" style="flex:0 0 44px">−</button><span class="fx" style="flex:1;text-align:center;font-size:13px">18px</span><button class="fp" style="flex:0 0 44px">＋</button></div>'+
-      '<div class="src"><label>亮度</label><button class="brB" data-br=".5">50</button><button class="brB" data-br=".7">70</button><button class="brB" data-br=".85">85</button><button class="brB" data-br="1">100</button></div>'+
-      '<div class="src"><label>翻页</label><button class="mP">▤ 分页</button><button class="mS">↕ 滚动</button></div>'+
-      '<div class="src"><label>自动翻</label><button class="apB" data-ap="0">关</button><button class="apB" data-ap="5">5s</button><button class="apB" data-ap="10">10s</button><button class="apB" data-ap="20">20s</button></div>'+
-      '<div class="src"><label>文字色</label><button class="gmode">单色</button></div>'+
-      '<div class="src"><label>背景色</label><input type="color" class="ibg" value="'+S.bg+'"></div>'+
-      '<div class="src"><label>文字色</label><input type="color" class="ifg" value="'+S.fg+'"></div>'+
-      '<div class="src"><label>背景图</label><input type="url" class="ibgi" placeholder="https://..." value="'+(S.bgi||'')+'" style="flex:1;height:34px;border-radius:6px;border:1px solid #2e3138;background:#15161a;color:#cdd0d5;padding:0 8px;font-size:13px;box-sizing:border-box"></div>'+
-      '<div class="src"><label>渐变起</label><input type="color" class="igc1" value="'+S.gc1+'"><input type="color" class="igc2" value="'+S.gc2+'"></div>'+
-      '<div class="src"><label>炫彩起</label><input type="range" class="igh1" min="0" max="360" value="'+S.gh1+'" style="flex:1;accent-color:#4a8fe0"></div>'+
-      '<div class="src"><label>炫彩止</label><input type="range" class="igh2" min="0" max="360" value="'+S.gh2+'" style="flex:1;accent-color:#4a8fe0"></div>'+
-      '<div class="src"><label>流速</label><button class="igsB" data-gs="3">快</button><button class="igsB" data-gs="6">中</button><button class="igsB" data-gs="12">慢</button></div>'+
+      '<div class="subtabs">'+
+        '<button class="subtab on" data-ui="basic">基础</button>'+
+        '<button class="subtab" data-ui="color">配色</button>'+
+        '<button class="subtab" data-ui="grad">渐变</button>'+
+      '</div>'+
+      '<div class="subpane on" data-ui-pane="basic">'+
+        '<div class="src"><label>字号</label><button class="fm" style="flex:0 0 44px">−</button><span class="fx" style="flex:1;text-align:center;font-size:13px">18px</span><button class="fp" style="flex:0 0 44px">＋</button></div>'+
+        '<div class="src"><label>亮度</label><button class="brB" data-br=".5">50</button><button class="brB" data-br=".7">70</button><button class="brB" data-br=".85">85</button><button class="brB" data-br="1">100</button></div>'+
+        '<div class="src"><label>翻页</label><button class="mP">▤ 分页</button><button class="mS">↕ 滚动</button></div>'+
+        '<div class="src"><label>自动翻</label><button class="apB" data-ap="0">关</button><button class="apB" data-ap="5">5s</button><button class="apB" data-ap="10">10s</button><button class="apB" data-ap="20">20s</button></div>'+
+      '</div>'+
+      '<div class="subpane" data-ui-pane="color">'+
+        '<div class="src"><label>文字模式</label><button class="gmode">单色</button></div>'+
+        '<div class="src"><label>背景色</label><input type="color" class="ibg" value="'+S.bg+'"></div>'+
+        '<div class="src"><label>文字色</label><input type="color" class="ifg" value="'+S.fg+'"></div>'+
+        '<div class="src"><label>背景图</label><input type="url" class="ibgi" placeholder="https://..." value="'+(S.bgi||'')+'" style="flex:1;height:34px;border-radius:6px;border:1px solid #2e3138;background:#15161a;color:#cdd0d5;padding:0 8px;font-size:13px;box-sizing:border-box"></div>'+
+      '</div>'+
+      '<div class="subpane" data-ui-pane="grad">'+
+        '<div class="src"><label>渐变起</label><input type="color" class="igc1" value="'+S.gc1+'"><input type="color" class="igc2" value="'+S.gc2+'"></div>'+
+        '<div class="src"><label>炫彩起</label><input type="range" class="igh1" min="0" max="360" value="'+S.gh1+'" style="flex:1;accent-color:#4a8fe0"></div>'+
+        '<div class="src"><label>炫彩止</label><input type="range" class="igh2" min="0" max="360" value="'+S.gh2+'" style="flex:1;accent-color:#4a8fe0"></div>'+
+        '<div class="src"><label>流速</label><button class="igsB" data-gs="3">快</button><button class="igsB" data-gs="6">中</button><button class="igsB" data-gs="12">慢</button></div>'+
+      '</div>'+
     '</div>'+
       '<div class="sub sset" data-sub="set"><div class="thlist" style="max-height:32vh;overflow-y:auto"></div><div class="src" style="margin-top:6px"><button class="ithSave" style="flex:1">💾 保存当前主题</button></div></div>'+
     '<div class="tabbar"><div class="tb" data-tab="cat"><div class="ic">📑</div><div class="lb">目录</div></div><div class="tb" data-tab="tts"><div class="ic">🎧</div><div class="lb">朗读</div></div><div class="tb" data-tab="ui"><div class="ic">Aa</div><div class="lb">字体</div></div><div class="tb" data-tab="set"><div class="ic">⚙</div><div class="lb">主题</div></div></div>'+
@@ -163,6 +174,16 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     if(RC&&RC.reflow)RC.reflow();
     refreshUI();
   }
+  var _subtabBtns=H.querySelectorAll('.subtab');
+  for(var _si=0;_si<_subtabBtns.length;_si++)(function(b){
+    b.onclick=function(){
+      var u=b.getAttribute('data-ui');
+      var all=H.querySelectorAll('.subtab');
+      for(var i=0;i<all.length;i++)all[i].className='subtab'+(all[i].getAttribute('data-ui')===u?' on':'');
+      var panes=H.querySelectorAll('.subpane');
+      for(var j=0;j<panes.length;j++)panes[j].className='subpane'+(panes[j].getAttribute('data-ui-pane')===u?' on':'');
+    };
+  })(_subtabBtns[_si]);
   var ithSave=H.querySelector('.ithSave');
   if(ithSave)ithSave.onclick=function(){
     var name=prompt('输入主题名称：','主题 '+(S.themes.length+1));
@@ -546,6 +567,14 @@ function viewShuku(_initHtml,_base){
   var _isGame=siteCategory()==='game';
   B.innerHTML='<div id="SC"></div>';
   var SC=Q('#SC');
+  var _scSaved=0;
+  try{_scSaved=parseFloat(LSV('RDR_SHELF_SCROLL')||'0')||0;}catch(e){}
+  if(_scSaved>0)setTimeout(function(){try{SC.scrollTop=_scSaved;}catch(e){}},80);
+  var _scT=null;
+  SC.addEventListener('scroll',function(){
+    if(_scT)clearTimeout(_scT);
+    _scT=setTimeout(function(){try{LSV('RDR_SHELF_SCROLL',String(SC.scrollTop));}catch(e){}},200);
+  },{passive:true});
   var items=[],nextUrl=null,loading=0,finished=0,seen={};
   function paint(){
     var html='';
