@@ -66,9 +66,17 @@ function detectPageType(){
     var zhCount=(allText.match(/[\u4e00-\u9fa5]/g)||[]).length;
     var zhRatio=totalLen>0?zhCount/totalLen:0;
     var _chapNum=(allText.match(/第[\d一二三四五六七八九十百千]+[章节集回话]/g)||[]).length;
+var _chapLinks=0;
+var _links=body.querySelectorAll('a[href]');
+for(var _li=0;_li<_links.length;_li++){
+  var _lt=(_links[_li].textContent||'').trim();
+  var _lh=_links[_li].getAttribute('href')||'';
+  if(/第[\d一二三四五六七八九十百千]+[章节集回话]/.test(_lt)||/chapter|read|article|action=article/i.test(_lh))_chapLinks++;
+}
+if(_chapLinks>=5)return 'list';
 if(_chapNum>=10&&totalLen<8000)return 'list';
 if(validLinks>=10&&density>0.4&&pDensity<0.3)return 'list';
-    if(pDensity>0.5&&totalLen>500)return 'reader';
+if(pDensity>0.5&&totalLen>500)return 'reader';
     if(zhRatio>0.5&&totalLen>800&&validLinks<80)return 'reader';
     if(validLinks>=15&&density>0.25)return 'list';
     if(totalLen>1000&&pDensity>0.35)return 'reader';
