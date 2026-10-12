@@ -211,9 +211,9 @@ function startImageReader(mode){
       return;
     }
     try{
-  for(var k=0;k<catalog.length;k++){catalog[k].paras=['@@IMG@@'+catalog[k].img+'@@IMG@@'];catalog[k].local=1;}
-  _rdMod('readChapter')(catalog[0].u,catalog,catalog[0].u);
-}catch(e){toast(err('E040',(e&&e.message)||''))}
+      for(var k=0;k<catalog.length;k++){catalog[k].paras=['@@IMG@@'+catalog[k].img+'@@IMG@@'];catalog[k].local=1;}
+      _rdMod('readChapter')(catalog[0].u,catalog,catalog[0].u);
+    }catch(e){toast(err('E040',(e&&e.message)||''))}
   }
   grabPageImages();
   var scrollCount=0,scrollMax=8;
@@ -270,11 +270,11 @@ function viewSetting(){
     '<div class="impBox" style="display:none"><textarea placeholder="粘贴书架 JSON..."></textarea><div class="row" style="margin-top:6px"><button class="simpok" style="flex:1">确认导入</button><button class="simpcc" style="flex:1">取消</button></div></div>'+
     '<div class="expBox" style="display:none"><textarea readonly></textarea><div class="row" style="margin-top:6px"><button class="sexpcc full">关闭</button></div></div>'+
     '<h3>模块管理</h3>'+
-'<div class="row"><button class="modBtn full">📦 打开模块管理</button></div>'+
-'<h3>其它</h3>'+
-'<div class="row"><button class="srst full">清空书架</button></div>'+
-'<div class="row"><button class="sclr full">重置所有设置</button></div>'+
-'</div></div>';
+    '<div class="row"><button class="modBtn full">📦 打开模块管理</button></div>'+
+    '<h3>其它</h3>'+
+    '<div class="row"><button class="srst full">清空书架</button></div>'+
+    '<div class="row"><button class="sclr full">重置所有设置</button></div>'+
+    '</div></div>';
   function renderHis(){
     var list=B.querySelector('.hisList');
     if(!list)return;
@@ -371,7 +371,7 @@ function viewSetting(){
     }catch(e){toast(err('E031'))}
   };
   var _mb=B.querySelector('.modBtn');if(_mb)_mb.onclick=function(){viewMods()};
-B.querySelector('.srst').onclick=function(){if(confirm('清空书架？')){SB([]);var _vs=_rdMod('viewShelf');if(_vs)_vs();else viewSetting();}};
+  B.querySelector('.srst').onclick=function(){if(confirm('清空书架？')){SB([]);var _vs=_rdMod('viewShelf');if(_vs)_vs();else viewSetting();}};
   B.querySelector('.sclr').onclick=function(){
     if(confirm('重置所有设置？')){
       try{LSV('RDR_CFG','{}')}catch(e){}
@@ -379,6 +379,109 @@ B.querySelector('.srst').onclick=function(){if(confirm('清空书架？')){SB([]
       theme();viewSetting();
     }
   };
+}
+
+function viewMods(){
+  setNav('setting');BK.style.display='block';FAVBTN.style.display='none';Q('.t').textContent='模块管理';
+  BK.onclick=function(){viewSetting()};
+  B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:60px;opacity:.6;font-size:13px">加载模块列表…</div></div></div>';
+  var _cdnMap={raw:'https://raw.githubusercontent.com/Aa-114514/Reader/main/',jsdelivr:'https://cdn.jsdelivr.net/gh/Aa-114514/Reader@main/',gcore:'https://gcore.jsdelivr.net/gh/Aa-114514/Reader@main/',fastly:'https://fastly.jsdelivr.net/gh/Aa-114514/Reader@main/',testingcf:'https://testingcf.jsdelivr.net/gh/Aa-114514/Reader@main/',statically:'https://cdn.statically.io/gh/Aa-114514/Reader/main/',ghproxy:'https://ghproxy.net/https://raw.githubusercontent.com/Aa-114514/Reader/main/',gitmirror:'https://raw.gitmirror.com/Aa-114514/Reader/main/'};
+  var _cdnName=null;try{_cdnName=localStorage.getItem('RDR_BEST_CDN')}catch(e){}
+  var _base=_cdnMap[_cdnName]||_cdnMap.jsdelivr;
+  fetch(_base+'reader-loader.js?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
+    .then(function(t){
+      try{new Function(t)()}catch(e){console.warn('[RDR] loader.js 执行失败',e)}
+      renderMods();
+    })
+    .catch(function(e){
+      B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:40px;color:#e57;font-size:13px">加载失败：'+escH(e.message||e)+'<br><br><button class="mRetry" style="height:40px;padding:0 24px;border-radius:8px;border:0;cursor:pointer;background:#4a8fe0;color:#fff">重试</button></div></div></div>';
+      var rb=B.querySelector('.mRetry');if(rb)rb.onclick=function(){viewMods()};
+    });
+  function renderMods(){
+    var list=window.RDR_LOADERS||[];
+    if(!list.length){B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:40px;opacity:.6;font-size:13px">无可用模块</div></div></div>';return}
+    var h='<div id="SC"><div id="ST">';
+    h+='<div style="font-size:12px;opacity:.6;margin-bottom:12px">当前 CDN: '+escH(_cdnName||'jsdelivr')+'</div>';
+    for(var i=0;i<list.length;i++){
+      var m=list[i];
+      var loaded=false;try{loaded=!!eval(m.test)}catch(e){}
+      var persist=localStorage.getItem('RDR_MOD_'+m.id.toUpperCase())==='1';
+      h+='<div style="padding:14px;border:1px solid rgba(128,128,128,.25);border-radius:10px;margin-bottom:12px">';
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="flex:1;font-size:15px">'+escH(m.name)+'</b><span style="font-size:12px;color:'+(loaded?'#2ecc71':'#888')+'">'+(loaded?'● 已加载':'○ 未加载')+'</span></div>';
+      h+='<div style="font-size:12px;opacity:.65;margin-bottom:12px;line-height:1.5">'+escH(m.desc)+'</div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+      if(!loaded)h+='<button class="mLoad" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#4a8fe0;color:#fff;font-size:13px">📥 加载</button>';
+      else h+='<button class="mUnload" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#e55;color:#fff;font-size:13px">🗑 卸载</button>';
+      h+='<button class="mPersist" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:'+(persist?'#2ecc71':'#2a2d34')+';color:#fff;font-size:13px">'+(persist?'✓ 常驻':'○ 常驻')+'</button>';
+      h+='<button class="mCopy" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#2a2d34;color:#fff;font-size:13px">📋 书签</button>';
+      h+='</div></div>';
+    }
+    h+='<div style="font-size:11px;opacity:.5;line-height:1.7;margin-top:16px">常驻=下次启动自动加载；书签=复制到剪贴板，可在其他页面安装本模块。</div>';
+    h+='</div></div>';
+    B.innerHTML=h;
+    [].forEach.call(B.querySelectorAll('.mLoad'),function(el){el.onclick=function(){loadOne(+el.getAttribute('data-i'))}});
+    [].forEach.call(B.querySelectorAll('.mUnload'),function(el){el.onclick=function(){unloadOne(+el.getAttribute('data-i'))}});
+    [].forEach.call(B.querySelectorAll('.mPersist'),function(el){el.onclick=function(){togglePersist(+el.getAttribute('data-i'))}});
+    [].forEach.call(B.querySelectorAll('.mCopy'),function(el){el.onclick=function(){copyBookmark(+el.getAttribute('data-i'))}});
+  }
+  function loadOne(i){
+    var m=window.RDR_LOADERS[i];if(!m)return;
+    if(!window.__rd){toast('RDR 未启动');return}
+    toast('加载 '+m.name+' …');
+    fetch(_base+m.file+'?t='+Date.now(),{cache:'no-store'})
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
+      .then(function(t){
+        var s=document.createElement('script');s.textContent=t;
+        (document.head||document.documentElement).appendChild(s);
+        setTimeout(function(){
+          var ok=false;try{ok=!!eval(m.test)}catch(e){}
+          toast(ok?('✔ '+m.name+' 已加载'):('✗ '+m.name+' 加载异常'));
+          renderMods();
+        },300);
+      }).catch(function(e){toast('失败: '+(e.message||e))});
+  }
+  function unloadOne(i){
+    var m=window.RDR_LOADERS[i];if(!m)return;
+    if(!window.__rd)return;
+    if(m.nav){
+      var NAV=document.getElementById('NAV');
+      if(NAV){
+        var items=NAV.querySelectorAll('[data-v]');
+        for(var j=0;j<items.length;j++){
+          var v=items[j].getAttribute('data-v');
+          if(m.nav.indexOf(v)>=0&&items[j].parentNode)items[j].parentNode.removeChild(items[j]);
+        }
+      }
+    }
+    if(m.unload){try{new Function(m.unload)()}catch(e){}}
+    toast('已卸载 '+m.name);
+    renderMods();
+  }
+  function togglePersist(i){
+    var m=window.RDR_LOADERS[i];if(!m)return;
+    var k='RDR_MOD_'+m.id.toUpperCase();
+    var v=localStorage.getItem(k)==='1'?'0':'1';
+    try{localStorage.setItem(k,v)}catch(e){}
+    toast(m.name+' 常驻='+(v==='1'?'开':'关'));
+    renderMods();
+  }
+  function copyBookmark(i){
+    var m=window.RDR_LOADERS[i];if(!m)return;
+    var bk='javascript:(function(){if(!window.__rd){alert("请先启动 RDR");return}var B="'+_base+'";fetch(B+"'+m.file+'?t="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text()}).then(function(t){var s=document.createElement("script");s.textContent=t;(document.head||document.documentElement).appendChild(s);setTimeout(function(){alert("✔ '+m.name+' 已加载")},300)}).catch(function(e){alert("失败: "+e.message)})})();';
+    function fallback(txt){
+      var ta=document.createElement('textarea');ta.value=txt;
+      ta.style.cssText='position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('已复制书签')}catch(e){alert('复制失败')}
+      document.body.removeChild(ta);
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(bk).then(function(){toast('已复制书签')}).catch(function(){fallback(bk)});
+      }else fallback(bk);
+    }catch(e){fallback(bk)}
+  }
 }
 
 function viewPurify(){
@@ -447,112 +550,5 @@ function purifyEdit(idx,preset){
     viewPurify();
   };
 }
-function viewMods(){
-  setNav('setting');BK.style.display='block';FAVBTN.style.display='none';Q('.t').textContent='模块管理';
-  BK.onclick=function(){viewSetting()};
-  B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:60px;opacity:.6;font-size:13px">加载模块列表…</div></div></div>';
-  var _cdnMap={raw:'https://raw.githubusercontent.com/Aa-114514/Reader/main/',jsdelivr:'https://cdn.jsdelivr.net/gh/Aa-114514/Reader@main/',gcore:'https://gcore.jsdelivr.net/gh/Aa-114514/Reader@main/',fastly:'https://fastly.jsdelivr.net/gh/Aa-114514/Reader@main/',testingcf:'https://testingcf.jsdelivr.net/gh/Aa-114514/Reader@main/',statically:'https://cdn.statically.io/gh/Aa-114514/Reader/main/',ghproxy:'https://ghproxy.net/https://raw.githubusercontent.com/Aa-114514/Reader/main/',gitmirror:'https://raw.gitmirror.com/Aa-114514/Reader/main/'};
-  var _cdnName=null;try{_cdnName=localStorage.getItem('RDR_BEST_CDN')}catch(e){}
-  var _base=_cdnMap[_cdnName]||_cdnMap.jsdelivr;
-  fetch(_base+'reader-loader.js?t='+Date.now(),{cache:'no-store'})
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
-    .then(function(t){
-      try{new Function(t)()}catch(e){console.warn('[RDR] loader.js 执行失败',e)}
-      renderMods();
-    })
-    .catch(function(e){
-      B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:40px;color:#e57;font-size:13px">加载失败：'+escH(e.message||e)+'<br><br><button class="mRetry" style="height:40px;padding:0 24px;border-radius:8px;border:0;cursor:pointer;background:#4a8fe0;color:#fff">重试</button></div></div></div>';
-      var rb=B.querySelector('.mRetry');if(rb)rb.onclick=function(){viewMods()};
-    });
 
-  function renderMods(){
-    var list=window.RDR_LOADERS||[];
-    if(!list.length){B.innerHTML='<div id="SC"><div id="ST"><div style="text-align:center;padding:40px;opacity:.6;font-size:13px">无可用模块</div></div></div>';return}
-    var h='<div id="SC"><div id="ST">';
-    h+='<div style="font-size:12px;opacity:.6;margin-bottom:12px">当前 CDN: '+escH(_cdnName||'jsdelivr')+'</div>';
-    for(var i=0;i<list.length;i++){
-      var m=list[i];
-      var loaded=false;try{loaded=!!eval(m.test)}catch(e){}
-      var persist=localStorage.getItem('RDR_MOD_'+m.id.toUpperCase())==='1';
-      h+='<div style="padding:14px;border:1px solid rgba(128,128,128,.25);border-radius:10px;margin-bottom:12px">';
-      h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="flex:1;font-size:15px">'+escH(m.name)+'</b><span style="font-size:12px;color:'+(loaded?'#2ecc71':'#888')+'">'+(loaded?'● 已加载':'○ 未加载')+'</span></div>';
-      h+='<div style="font-size:12px;opacity:.65;margin-bottom:12px;line-height:1.5">'+escH(m.desc)+'</div>';
-      h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
-      if(!loaded)h+='<button class="mLoad" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#4a8fe0;color:#fff;font-size:13px">📥 加载</button>';
-      else h+='<button class="mUnload" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#e55;color:#fff;font-size:13px">🗑 卸载</button>';
-      h+='<button class="mPersist" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:'+(persist?'#2ecc71':'#2a2d34')+';color:#fff;font-size:13px">'+(persist?'✓ 常驻':'○ 常驻')+'</button>';
-      h+='<button class="mCopy" data-i="'+i+'" style="flex:1;min-width:76px;height:36px;border-radius:8px;border:0;cursor:pointer;background:#2a2d34;color:#fff;font-size:13px">📋 书签</button>';
-      h+='</div>';
-      h+='</div>';
-    }
-    h+='<div style="font-size:11px;opacity:.5;line-height:1.7;margin-top:16px">常驻=下次启动自动加载；书签=复制到剪贴板，可在其他页面安装本模块。</div>';
-    h+='</div></div>';
-    B.innerHTML=h;
-    [].forEach.call(B.querySelectorAll('.mLoad'),function(el){el.onclick=function(){loadOne(+el.getAttribute('data-i'))}});
-    [].forEach.call(B.querySelectorAll('.mUnload'),function(el){el.onclick=function(){unloadOne(+el.getAttribute('data-i'))}});
-    [].forEach.call(B.querySelectorAll('.mPersist'),function(el){el.onclick=function(){togglePersist(+el.getAttribute('data-i'))}});
-    [].forEach.call(B.querySelectorAll('.mCopy'),function(el){el.onclick=function(){copyBookmark(+el.getAttribute('data-i'))}});
-  }
-
-  function loadOne(i){
-    var m=window.RDR_LOADERS[i];if(!m)return;
-    if(!window.__rd){toast('RDR 未启动');return}
-    toast('加载 '+m.name+' …');
-    fetch(_base+m.file+'?t='+Date.now(),{cache:'no-store'})
-      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
-      .then(function(t){
-        var s=document.createElement('script');s.textContent=t;
-        (document.head||document.documentElement).appendChild(s);
-        setTimeout(function(){
-          var ok=false;try{ok=!!eval(m.test)}catch(e){}
-          toast(ok?('✔ '+m.name+' 已加载'):('✗ '+m.name+' 加载异常'));
-          renderMods();
-        },300);
-      }).catch(function(e){toast('失败: '+(e.message||e))});
-  }
-
-  function unloadOne(i){
-    var m=window.RDR_LOADERS[i];if(!m)return;
-    if(!window.__rd)return;
-    if(m.nav){
-      var NAV=document.getElementById('NAV');
-      if(NAV){
-        var items=NAV.querySelectorAll('[data-v]');
-        for(var j=0;j<items.length;j++){
-          var v=items[j].getAttribute('data-v');
-          if(m.nav.indexOf(v)>=0&&items[j].parentNode)items[j].parentNode.removeChild(items[j]);
-        }
-      }
-    }
-    if(m.unload){try{new Function(m.unload)()}catch(e){}}
-    toast('已卸载 '+m.name);
-    renderMods();
-  }
-
-  function togglePersist(i){
-    var m=window.RDR_LOADERS[i];if(!m)return;
-    var k='RDR_MOD_'+m.id.toUpperCase();
-    var v=localStorage.getItem(k)==='1'?'0':'1';
-    try{localStorage.setItem(k,v)}catch(e){}
-    toast(m.name+' 常驻='+(v==='1'?'开':'关'));
-    renderMods();
-  }
-
-  function copyBookmark(i){
-    var m=window.RDR_LOADERS[i];if(!m)return;
-    var bk='javascript:(function(){if(!window.__rd){alert("请先启动 RDR");return}var B="'+_base+'";fetch(B+"'+m.file+'?t="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text()}).then(function(t){var s=document.createElement("script");s.textContent=t;(document.head||document.documentElement).appendChild(s);setTimeout(function(){alert("✔ '+m.name+' 已加载")},300)}).catch(function(e){alert("失败: "+e.message)})})();';
-    function fallback(txt){
-      var ta=document.createElement('textarea');ta.value=txt;
-      ta.style.cssText='position:fixed;left:-9999px;top:0';
-      document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('已复制书签')}catch(e){alert('复制失败')}
-      document.body.removeChild(ta);
-    }
-    try{
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(bk).then(function(){toast('已复制书签')}).catch(function(){fallback(bk)});
-      }else fallback(bk);
-    }catch(e){fallback(bk)}
-  }
-}
 if(window.__rdNavAdd)window.__rdNavAdd('setting',100,'⚙','设置',viewSetting);
