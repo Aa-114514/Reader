@@ -1,5 +1,5 @@
 (function(){
-var RDR_VER='20261012-6';
+var RDR_VER='20261012-7';
 var D=document,W=window;
 var ST='#R{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483647;font-family:"Noto Serif CJK SC",serif;display:flex;flex-direction:column}'+
 '#R.withbg{background-image:var(--rbgi);background-size:cover;background-position:center}'+
@@ -148,7 +148,6 @@ var O=D.createElement('div');O.id='R';
 O.innerHTML='<div id="T"><button class="bk">←</button><button class="fav" style="display:none">☆</button><button class="fm" style="display:none">⇄</button><span class="t"></span><button class="x">×</button></div><div id="B"></div><div id="NAV"><div data-v="shelf"><span class="ic">⭐</span><span>书架</span></div><div data-v="shuku"><span class="ic">📚</span><span>书库</span></div><div data-v="feed"><span class="ic">📡</span><span>订阅源</span></div><div data-v="setting"><span class="ic">⚙</span><span>设置</span></div></div><div id="MSK"></div><div id="RST">← 返回阅读（5）</div>';
 D.body.appendChild(O);
 function Q(s){return D.querySelector(s)}
-O.addEventListener('touchstart',function(e){e.stopPropagation()},{passive:true});
 O.addEventListener('touchmove',function(e){e.stopPropagation()},{passive:true});
 O.addEventListener('wheel',function(e){e.stopPropagation()},{passive:true});
 var B=Q('#B'),BK=Q('.bk'),NAV=Q('#NAV'),RST=Q('#RST'),FAVBTN=Q('.fav');
