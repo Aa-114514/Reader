@@ -71,9 +71,9 @@ function boot(){
     var last=null;
     try{last=JSON.parse(LSV('RDR_LAST')||'null')}catch(e){}
     if(last&&last.cat&&last.cat.length){
-      if(Date.now()-last.ts<30000)readChapter(last.cu,last.cat);
-      else viewShuku();
-    }else viewShuku();
+  if(Date.now()-last.ts<30000){var _bu=last.bu||last.cu;readChapter(last.cu,last.cat,_bu,PROG_GET(_bu));}//__RDR_PATCH__
+  else viewShuku();
+}else viewShuku();
   }else{
     var jumpUrl=null;
     try{jumpUrl=LSV('RDR_JUMP_URL');if(jumpUrl)LSV('RDR_JUMP_URL','');}catch(e){}
