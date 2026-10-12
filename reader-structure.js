@@ -84,6 +84,62 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     '</div>';
   var A=Q('#A'),V=Q('#V'),L=Q('#L'),M=Q('#M'),R2=Q('#Q'),H=Q('#H'),MSK=Q('#MSK');
   var cs=[],ci=0,pg=0,tot=1,cw=0,pn=0,did=0,tk=0,apTimer=null;
+  var _lpT=null,_lpX=0,_lpY=0,_lpP=null,_lpMoved=false;
+  A.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1)return;
+    var t=e.target;
+    while(t&&t!==A&&t.tagName!=='P')t=t.parentNode;
+    if(!t||t===A){_lpP=null;return}
+    _lpP=t;_lpX=e.touches[0].clientX;_lpY=e.touches[0].clientY;_lpMoved=false;
+    if(_lpT)clearTimeout(_lpT);
+    _lpT=setTimeout(function(){
+      _lpT=null;
+      if(_lpMoved)return;
+      var txt=(_lpP&&_lpP.textContent||'').trim();
+      if(!txt)return;
+      _showTextMenu(_lpX,_lpY,txt);
+    },500);
+  },{passive:true});
+  A.addEventListener('touchmove',function(e){
+    if(!e.touches.length)return;
+    if(Math.abs(e.touches[0].clientX-_lpX)>10||Math.abs(e.touches[0].clientY-_lpY)>10){_lpMoved=true;if(_lpT){clearTimeout(_lpT);_lpT=null;}}
+  },{passive:true});
+  A.addEventListener('touchend',function(){if(_lpT){clearTimeout(_lpT);_lpT=null}},{passive:true});
+  A.addEventListener('touchcancel',function(){if(_lpT){clearTimeout(_lpT);_lpT=null}},{passive:true});
+  function _showTextMenu(x,y,text){
+    var old=D.getElementById('RDM');if(old&&old.parentNode)old.parentNode.removeChild(old);
+    var m=D.createElement('div');m.id='RDM';
+    m.innerHTML='<div data-act="purify">📝 替换净化</div><div data-act="copy">📋 复制</div><div data-act="note">✏️ 做笔记</div>';
+    D.body.appendChild(m);
+    var r=m.getBoundingClientRect();
+    var vw=W.innerWidth,vh=W.innerHeight;
+    var mx=x-r.width/2,my=y-r.height-12;
+    if(mx<8)mx=8;
+    if(mx+r.width>vw-8)mx=vw-r.width-8;
+    if(my<8)my=y+24;
+    if(my+r.height>vh-8)my=vh-r.height-8;
+    m.style.left=mx+'px';m.style.top=my+'px';
+    function _close(){if(m.parentNode)m.parentNode.removeChild(m);D.removeEventListener('touchstart',_outside)}
+    function _outside(e){if(m.contains(e.target))return;_close()}
+    setTimeout(function(){D.addEventListener('touchstart',_outside,{passive:true})},80);
+    m.addEventListener('click',function(ev){
+      var t=ev.target;
+      while(t&&t!==m&&!t.getAttribute('data-act'))t=t.parentNode;
+      if(!t||t===m)return;
+      var act=t.getAttribute('data-act');
+      if(act==='copy'){
+        try{navigator.clipboard.writeText(text);toast('已复制')}catch(err){var ta=D.createElement('textarea');ta.value=text;D.body.appendChild(ta);ta.select();try{D.execCommand('copy');toast('已复制')}catch(e2){toast('复制失败')}D.body.removeChild(ta);}
+        _close();
+      }else if(act==='purify'){
+        _close();
+        window.__rdPurifyBack='reader';
+        setTimeout(function(){purifyEdit(-1,{name:'',host:location.host,scope:'read',find:text.slice(0,200),replace:'',regex:0,enable:1})},50);
+      }else if(act==='note'){
+        try{var notes=JSON.parse(LSV('RDR_NOTES')||'[]');notes.unshift({u:cs[ci].u,t:cs[ci].t,sel:text.slice(0,500),ts:Date.now()});if(notes.length>500)notes=notes.slice(0,500);LSV('RDR_NOTES',JSON.stringify(notes));toast('已保存笔记')}catch(e){toast('保存失败')}
+        _close();
+      }
+    });
+  }
   var tabSubs={cat:Q('.scat'),tts:Q('.stts'),ui:Q('.sui'),set:Q('.sset')};
   for(var i=0;i<catalog.length;i++)cs.push({u:catalog[i].u,t:catalog[i].t,p:catalog[i].paras||null,d:catalog[i].local?1:0,l:0,f:catalog[i].local?1:0,cb:[],img:catalog[i].img,image_url:catalog[i].img,tags:catalog[i].tags||'',desc:catalog[i].desc||'',file:catalog[i].file||'',be:catalog[i].be||'',loc:catalog[i].loc||''});
   var cu=chUrl.split('#')[0];
@@ -442,6 +498,18 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     fs:function(n){if(n===undefined)return S.f;S.f=n;SV();A.style.fontSize=n+'px';var r=tot>1?pg/(tot-1):0;lay(function(){go(Math.round(r*(tot-1)),false)});refreshUI();return S.f;},
     setAP:setAP,
     setMode:setMode,
+    reload:function(){
+      var c=cs[ci];if(!c)return;
+      var _keepPg=pg;
+      if(c.local){RP(c.p,false);return}
+      try{localStorage.removeItem('CACHE_'+c.u)}catch(e){}
+      c.d=0;c.p=null;c.l=0;c.cb=[];c.f=0;
+      Lc(ci,function(p){
+        if(!p)return;
+        RP(p,false);
+        setTimeout(function(){go(_keepPg,false);},60);
+      });
+    },
     reflow:function(){
       try{
         var ims=A.querySelectorAll('img');
@@ -1150,19 +1218,19 @@ function viewPurify(){
         '<div style="font-size:12px;opacity:.55;margin-top:2px;word-break:break-all">查找:<code>'+escH((r.find||'').slice(0,60))+'</code></div>';
         box.querySelector('.purDel').onclick=function(ev){ev.stopPropagation();if(!confirm('删除此规则？'))return;var a=purifyAll();a.splice(idx,1);purifySave(a);paint();};
         box.querySelector('.purTog').onclick=function(ev){ev.stopPropagation();var a=purifyAll();a[idx].enable=r.enable===0?1:0;purifySave(a);paint();};
-        box.onclick=function(){purifyEdit(idx)};
+        box.onclick=function(){window.__rdPurifyBack=null;purifyEdit(idx)};
         list.appendChild(box);
       })(i);
     }
   }
-  B.querySelector('.purAdd').onclick=function(){purifyEdit(-1)};
+  B.querySelector('.purAdd').onclick=function(){window.__rdPurifyBack=null;purifyEdit(-1)};
   paint();
 }
-function purifyEdit(idx){
+function purifyEdit(idx,preset){
   var all=purifyAll();
-  var r=idx>=0?all[idx]:{name:'',host:'*',scope:'all',find:'',replace:'',regex:0,enable:1};
+  var r=idx>=0?all[idx]:(preset||{name:'',host:'*',scope:'all',find:'',replace:'',regex:0,enable:1});
   var box=D.createElement('div');
-  box.style.cssText='position:absolute;inset:0;background:var(--rbg,#15161a);z-index:5;overflow-y:auto;padding:16px 20px;box-sizing:border-box';
+  box.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:var(--rbg,#15161a);z-index:2147483600;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px 20px 140px;box-sizing:border-box';
   box.innerHTML='<div style="font-size:14px;opacity:.8;margin-bottom:12px">'+(idx>=0?'编辑规则':'新增规则')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:10px">'+
     '<label style="font-size:13px;opacity:.7">名称</label><input class="pName" type="text" value="'+escH(r.name||'')+'" style="height:38px;border-radius:8px;border:1px solid #2e3138;background:#15161a;color:#cdd0d5;padding:0 10px;font-size:13px">'+
@@ -1171,14 +1239,14 @@ function purifyEdit(idx){
     '<label style="font-size:13px;opacity:.7">查找</label><textarea class="pFind" style="height:80px;border-radius:8px;border:1px solid #2e3138;background:#15161a;color:#cdd0d5;padding:8px;font:12px monospace">'+escH(r.find||'')+'</textarea>'+
     '<label style="font-size:13px;opacity:.7">替换为（留空=删除）</label><textarea class="pRep" style="height:60px;border-radius:8px;border:1px solid #2e3138;background:#15161a;color:#cdd0d5;padding:8px;font:12px monospace">'+escH(r.replace||'')+'</textarea>'+
     '<div style="display:flex;gap:8px"><button class="pRegex" style="flex:1;height:38px;border-radius:8px;border:0;cursor:pointer;background:'+(r.regex?'#4a8fe0':'#2a2d34')+';color:#d7dae0;font-size:13px">'+(r.regex?'正则 ✓':'正则 ✗')+'</button><button class="pEn" style="flex:1;height:38px;border-radius:8px;border:0;cursor:pointer;background:'+(r.enable===0?'#2a2d34':'#4a8fe0')+';color:#d7dae0;font-size:13px">'+(r.enable===0?'已禁用':'已启用')+'</button></div>'+
-    '<div style="display:flex;gap:8px;margin-top:10px;position:sticky;bottom:0;padding:10px 0;background:var(--rbg,#15161a);box-shadow:0 -6px 12px rgba(0,0,0,.25)"><button class="pSave" style="flex:1;height:44px;border-radius:10px;border:0;cursor:pointer;background:#4a8fe0;color:#fff;font-size:14px">保存</button><button class="pCancel" style="flex:1;height:44px;border-radius:10px;border:0;cursor:pointer;background:#2a2d34;color:#d7dae0;font-size:14px">取消</button></div>'+
+    '<div style="display:flex;gap:8px;margin-top:20px"><button class="pSave" style="flex:1;height:44px;border-radius:10px;border:0;cursor:pointer;background:#4a8fe0;color:#fff;font-size:14px">保存</button><button class="pCancel" style="flex:1;height:44px;border-radius:10px;border:0;cursor:pointer;background:#2a2d34;color:#d7dae0;font-size:14px">取消</button></div>'+
     '</div>';
   B.appendChild(box);
   box.querySelector('.pScope').value=r.scope||'all';
   var reOn=r.regex?1:0,enOn=r.enable===0?0:1;
   box.querySelector('.pRegex').onclick=function(){reOn=reOn?0:1;this.textContent=reOn?'正则 ✓':'正则 ✗';this.style.background=reOn?'#4a8fe0':'#2a2d34';};
   box.querySelector('.pEn').onclick=function(){enOn=enOn?0:1;this.textContent=enOn?'已启用':'已禁用';this.style.background=enOn?'#4a8fe0':'#2a2d34';};
-  box.querySelector('.pCancel').onclick=function(){box.parentNode.removeChild(box)};
+  box.querySelector('.pCancel').onclick=function(){box.parentNode.removeChild(box);if(window.__rdPurifyBack==='reader')window.__rdPurifyBack=null;};
   box.querySelector('.pSave').onclick=function(){
     var o={name:box.querySelector('.pName').value.trim().slice(0,40)||('规则'+(all.length+1)),host:box.querySelector('.pHost').value.trim()||'*',scope:box.querySelector('.pScope').value,find:box.querySelector('.pFind').value,replace:box.querySelector('.pRep').value,regex:reOn,enable:enOn};
     if(!o.find){toast('查找内容不能为空');return}
@@ -1187,6 +1255,12 @@ function purifyEdit(idx){
     if(idx>=0)arr[idx]=o;else arr.push(o);
     purifySave(arr);
     box.parentNode.removeChild(box);
+    if(window.__rdPurifyBack==='reader'){
+      window.__rdPurifyBack=null;
+      if(RC&&RC.reload)RC.reload();
+      toast('已应用规则');
+      return;
+    }
     viewPurify();
   };
 }
