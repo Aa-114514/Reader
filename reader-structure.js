@@ -61,7 +61,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
         '<button class="subtab" data-ui="grad">渐变</button>'+
       '</div>'+
       '<div class="subpane on" data-ui-pane="basic">'+
-        '<div class="src"><label>字号</label><button class="fm" style="flex:0 0 44px">−</button><span class="fx" style="flex:1;text-align:center;font-size:13px">18px</span><button class="fp" style="flex:0 0 44px">＋</button></div>'+
+        '<div class="src"><label>字号</label><button class="fmn" style="flex:0 0 44px">−</button><span class="fx" style="flex:1;text-align:center;font-size:13px">18px</span><button class="fp" style="flex:0 0 44px">＋</button></div>'+
         '<div class="src"><label>亮度</label><button class="brB" data-br=".5">50</button><button class="brB" data-br=".7">70</button><button class="brB" data-br=".85">85</button><button class="brB" data-br="1">100</button></div>'+
         '<div class="src"><label>翻页</label><button class="mP">▤ 分页</button><button class="mS">↕ 滚动</button></div>'+
         '<div class="src"><label>自动翻</label><button class="apB" data-ap="0">关</button><button class="apB" data-ap="5">5s</button><button class="apB" data-ap="10">10s</button><button class="apB" data-ap="20">20s</button></div>'+
@@ -149,7 +149,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
   ci=idx;A.style.fontSize=S.f+'px';Q('.fx').textContent=S.f+'px';
   var _initPg=null;
   if(initProg){if(initProg.ci!=null)ci=Math.max(0,Math.min(initProg.ci,cs.length-1));if(initProg.pg!=null)_initPg=initProg.pg;}
-  LSV('RDR_LAST',JSON.stringify({cu:cs[ci].u,ct:cs[ci].t,cat:catalog.slice(0,300),ts:Date.now()}));
+  LSV('RDR_LAST',JSON.stringify({cu:cs[ci].u,ct:cs[ci].t,bu:bUrl,cat:catalog.slice(0,300),ts:Date.now()}));
   var _imgMode=false;
   try{_imgMode=true;for(var _im=0;_im<catalog.length&&_im<8;_im++){var _p=catalog[_im].paras;if(!_p||_p.length!==1||(_p[0]||'').indexOf('@@IMG@@')!==0){_imgMode=false;break}}}catch(e){_imgMode=false}
 
@@ -378,7 +378,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     ci=i;window.__rdWantPg=null;var c=cs[i];
     Q('.t').textContent=c.t.slice(0,40);
     window.__rdCurImgData=(c&&c.img)?c:null;
-    LSV('RDR_LAST',JSON.stringify({cu:c.u,ct:c.t,cat:catalog.slice(0,300),ts:Date.now()}));
+    LSV('RDR_LAST',JSON.stringify({cu:c.u,ct:c.t,bu:bUrl,cat:catalog.slice(0,300),ts:Date.now()}));
     if(_initPg==null)PROG_SET(bUrl,{cu:c.u,ct:c.t,ci:i,pg:0,cat:catalog.slice(0,300),ts:Date.now()});
     HIS_ADD(c.u,c.t);
     syncFav();
@@ -410,7 +410,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
   function setAP(n){
     S.ap=n;SV();
     if(apTimer){clearInterval(apTimer);apTimer=null}
-    if(n>0)apTimer=setInterval(function(){if(pn)return;if(pg<tot-1)go(pg+1);else if(ci<cs.length-1)Sh(ci+1);else clearInterval(apTimer);},n*1000);
+    if(n>0)apTimer=setInterval(function(){if(pn)return;if(ttsOn&&!ttsPaused)return;if(pg<tot-1)go(pg+1);else if(ci<cs.length-1)Sh(ci+1);else clearInterval(apTimer);},n*1000);
     refreshUI();
   }
   function setMode(m){S.m=m;SV();applyMode();refreshUI();}
@@ -475,7 +475,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
   Q('.pv').onclick=function(){if(ci>0)Sh(ci-1)};
   Q('.nx').onclick=function(){if(ci<cs.length-1)Sh(ci+1)};
   Q('.pb').oninput=function(){go(parseInt(this.value))};
-  var fmB=H.querySelector('.fm'),fpB=H.querySelector('.fp');
+  var fmB=H.querySelector('.fmn'),fpB=H.querySelector('.fp');
   if(fmB)fmB.onclick=function(){if(S.f>12){S.f-=2;SV();A.style.fontSize=S.f+'px';var r=tot>1?pg/(tot-1):0;lay(function(){go(Math.round(r*(tot-1)),false)});refreshUI()}};
   if(fpB)fpB.onclick=function(){if(S.f<40){S.f+=2;SV();A.style.fontSize=S.f+'px';var r=tot>1?pg/(tot-1):0;lay(function(){go(Math.round(r*(tot-1)),false)});refreshUI()}};
   var brs=H.querySelectorAll('.brB');for(var bi=0;bi<brs.length;bi++)(function(el){el.onclick=function(){S.br=parseFloat(el.getAttribute('data-br'));SV();theme();refreshUI()}})(brs[bi]);
@@ -711,7 +711,7 @@ function viewShuku(_initHtml,_base){
       var title=purifyText((nm.textContent||'').trim(),'lib');
       if(title.length<1||title.length>80)continue;
       var aut=its[i].querySelector('a.author, .author'),wor=its[i].querySelector('span.words, .words'),dt=its[i].querySelector('span[style], .date'),up=its[i].querySelector('p.update, .update');
-      arr.push({url:f,title:title,author:aut?(aut.textContent||'').replace(/作者[：:]/,'').trim():'',words:wor?(wor.textContent||'').trim():'',date:dt?(dt.textContent||'').trim():'',latest:up?(up.textContent||'').trim():'',thumb:pickThumb(its[i])});
+      arr.push({url:f,title:title,author:purifyText(aut?(aut.textContent||'').replace(/作者[：:]/,'').trim():'','lib'),words:purifyText(wor?(wor.textContent||'').trim():'','lib'),date:purifyText(dt?(dt.textContent||'').trim():'','lib'),latest:purifyText(up?(up.textContent||'').trim():'','lib'),thumb:pickThumb(its[i])});
     }
     return {items:arr,doc:d};
   }
@@ -770,7 +770,7 @@ function viewShuku(_initHtml,_base){
       }
       var u=_restorePages.shift();
       FH(u).then(function(h){
-        _state.pages.push(u);
+        _state.pages.push(u);if(_state.pages.length>200)_state.pages.splice(0,_state.pages.length-200);
         add(h,u);
         paint();
         loadRestore();
@@ -783,7 +783,7 @@ function viewShuku(_initHtml,_base){
       loading=1;
       var _nUrl=nextUrl;
       FH(_nUrl).then(function(h){
-        _state.pages.push(_nUrl);
+        _state.pages.push(_nUrl);if(_state.pages.length>200)_state.pages.splice(0,_state.pages.length-200);
         add(h,_nUrl);
         loading=0;
         paint();
