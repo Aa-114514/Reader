@@ -1,0 +1,25 @@
+javascript:(function(){
+if(document.getElementById('RDR_LOGVIEW')){document.getElementById('RDR_LOGVIEW').parentNode.removeChild(document.getElementById('RDR_LOGVIEW'));return}
+var raw=localStorage.getItem('RDR_TAPLOG');
+if(!raw){alert('无日志');return}
+var arr;try{arr=JSON.parse(raw)}catch(e){alert('日志解析失败');return}
+if(!arr||!arr.length){alert('日志为空');return}
+var O=document.createElement('div');O.id='RDR_LOGVIEW';
+O.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.96);color:#0f0;font:12px/1.5 monospace;z-index:2147483647;overflow:auto;-webkit-overflow-scrolling:touch;padding:0;box-sizing:border-box';
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+var h='<div style="position:sticky;top:0;background:rgba(0,0,0,.98);padding:8px 10px;display:flex;gap:8px;border-bottom:1px solid #333;z-index:2"><span style="flex:1;color:#0f0">RDR 点击日志 ('+arr.length+')</span><button id="rllClear" style="background:#4a8fe0;color:#fff;border:0;border-radius:6px;padding:6px 12px;font-size:12px">清空</button><button id="rllClose" style="background:#444;color:#fff;border:0;border-radius:6px;padding:6px 12px;font-size:12px">关闭</button></div><div style="padding:8px 10px">';
+arr.slice().reverse().forEach(function(r,i){
+  var t=new Date(r.t);
+  var ts=('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+':'+('0'+t.getSeconds()).slice(-2);
+  h+='<div style="border-bottom:1px dashed #333;padding:6px 0">';
+  h+='<div style="color:#0ff">'+(i+1)+' ['+ts+']['+esc(r.e)+'] '+esc(r.tg)+(r.id?'#'+esc(r.id):'')+(r.cl?'.'+esc(r.cl.split(/\s+/).join('.')):'')+'</div>';
+  if(r.tx)h+='<div style="color:#ff0;padding-left:8px">'+esc(r.tx)+'</div>';
+  h+='<div style="color:#888;padding-left:8px;word-break:break-all">'+esc(r.pt)+'</div>';
+  h+='</div>';
+});
+h+='</div>';
+O.innerHTML=h;
+(document.body||document.documentElement).appendChild(O);
+O.querySelector('#rllClose').onclick=function(){O.parentNode.removeChild(O)};
+O.querySelector('#rllClear').onclick=function(){if(confirm('清空日志？')){localStorage.removeItem('RDR_TAPLOG');O.parentNode.removeChild(O)}};
+})();
