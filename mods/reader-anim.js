@@ -257,7 +257,7 @@ function openAnimCfg(){
     h+='<div style="margin-top:20px"><button class="rd-a-reset" style="width:100%;height:42px;border-radius:8px;border:0;cursor:pointer;background:#2a2d34;color:#d7dae0;font-size:14px">恢复默认</button></div>';
     h+='<div style="font-size:11px;opacity:.5;margin-top:14px;line-height:1.6">改动立即生效</div>';
     ov.innerHTML=h;
-    D.body.appendChild(ov);
+(c.O||D.getElementById('R')||D.body).appendChild(ov);
 
     function repaint(){
       var groups=[['rd-a-toggle',cfg.enabled?1:0],['rd-a-lm',cfg.listMode],['rd-a-pm',cfg.pageMode],['rd-a-sf',cfg.scrollFade?1:0]];
