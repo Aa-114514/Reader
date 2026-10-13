@@ -15,7 +15,7 @@ window.RDR_LOADERS=[
   {
     id:'site',
     name:'站点识别',
-    desc:'站点表 + 页面类型识别',
+    desc:'站点表匹配 / 页面类型识别',
     file:'mods/reader-site.js',
     test:'window.__rd&&window.__rd.modules.siteLoaded',
     requires:[],
@@ -45,11 +45,41 @@ window.RDR_LOADERS=[
   {
     id:'anim',
     name:'切换动画',
-    desc:'界面切换时元素从四周飞入；阅读器文字拆分为单字飞入',
+    desc:'列表 3 种动画 / 翻页 4 种动画 / 上下滚动淡入',
     file:'mods/reader-anim.js',
     test:'window.__rd&&window.__rd.modules.animLoaded',
     requires:['read'],
     nav:[],
-    unload:''
+    unload:'delete window.__rd.modules.animLoaded;delete window.__rd.modules.anim;'
+  },
+  {
+    id:'enhance',
+    name:'阅读增强',
+    desc:'高亮 / 段落书签 / 笔记界面 / 章节内搜索 / 全书搜索',
+    file:'mods/reader-enhance.js',
+    test:'window.__rd&&window.__rd.modules.enhanceLoaded',
+    requires:['read','site'],
+    nav:[],
+    unload:'delete window.__rd.modules.enhanceLoaded;delete window.__rd.modules.enhance;'
+  },
+  {
+    id:'ux',
+    name:'阅读体验',
+    desc:'自动夜间 / 进度徽章 / 手势 / 阅读统计',
+    file:'mods/reader-ux.js',
+    test:'window.__rd&&window.__rd.modules.uxLoaded',
+    requires:['read','site'],
+    nav:[],
+    unload:'delete window.__rd.modules.uxLoaded;delete window.__rd.modules.ux;'
+  },
+  {
+    id:'export',
+    name:'下载导出',
+    desc:'批量下载 / 导出 TXT / 导出 EPUB / 导入本地 TXT',
+    file:'mods/reader-export.js',
+    test:'window.__rd&&window.__rd.modules.exportLoaded',
+    requires:['read','site'],
+    nav:[],
+    unload:'delete window.__rd.modules.exportLoaded;delete window.__rd.modules.export;'
   }
 ];
