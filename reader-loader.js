@@ -16,27 +16,27 @@ window.RDR_LOADERS=[
     id:'read',
     name:'阅读模块',
     desc:'书库 / 书架 / 阅读器 / 详情页',
-    file:'reader-read.js',
+    file:'mods/reader-read.js',
     test:'window.__rd&&window.__rd.modules.readChapter',
     nav:['shuku','shelf'],
-    unload:'delete window.__rd.modules.readChapter;delete window.__rd.modules.viewShuku;delete window.__rd.modules.viewShelf;delete window.__rd.modules.viewDetail;window.__rdRelayout=null;'
+    unload:'...'
   },
   {
     id:'feed',
     name:'订阅源',
     desc:'保真渲染订阅源页面',
-    file:'reader-feed.js',
+    file:'mods/reader-feed.js',
     test:'window.__rd&&window.__rd.modules.viewFeed',
     nav:['feed'],
-    unload:'delete window.__rd.modules.viewFeed;delete window.__rd.modules.viewFeedList;delete window.__rd.modules.feedList;delete window.__rd.modules.feedSave;'
+    unload:'...'
   },
   {
-  id:'anim',
-  name:'切换动画',
-  desc:'界面切换时元素从四周飞入；阅读器文字拆分为单字飞入',
-  file:'reader-anim.js',
-  test:'window.__rd&&window.__rd.modules.animLoaded',
-  nav:[],
-  unload:''
-}
+    id:'anim',
+    name:'切换动画',
+    desc:'...',
+    file:'mods/reader-anim.js',
+    test:'window.__rd&&window.__rd.modules.animLoaded',
+    nav:[],
+    unload:''
+  }
 ];
