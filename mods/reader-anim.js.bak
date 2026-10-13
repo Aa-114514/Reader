@@ -232,52 +232,63 @@ setInterval(injectReaderBtn,500);
 /* ============= 设置界面 - 全局动画配置 ============= */
 var LM_NAMES={1:'弹跳',2:'拉链',3:'纸片'};
 function openAnimCfg(){
-  var ov=D.createElement('div');
-  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483600;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px 40px;box-sizing:border-box;font:14px system-ui';
-  function btnRow(items,cur,cls){
-    var h='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
-    items.forEach(function(it){
-      h+='<button class="'+cls+'" data-v="'+it[0]+'" style="flex:1;min-width:60px;height:38px;border-radius:8px;border:0;cursor:pointer;background:'+(cur==it[0]?'#4a8fe0':'#2a2d34')+';color:#fff;font-size:13px">'+it[1]+'</button>';
-    });
-    return h+'</div>';
-  }
-  var h='<div style="display:flex;align-items:center;margin-bottom:18px"><button class="rd-anim-close" style="background:none;border:0;color:inherit;font-size:24px;padding:0 12px 0 0">←</button><b>动画配置</b></div>';
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">总开关</h3>';
-  h+=btnRow([[1,'开'],[0,'关']],cfg.enabled?1:0,'rd-a-toggle');
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">书库 / 书架下拉</h3>';
-  h+=btnRow([[1,LM_NAMES[1]],[2,LM_NAMES[2]],[3,LM_NAMES[3]]],cfg.listMode,'rd-a-lm');
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">阅读器 左右翻页</h3>';
-  h+=btnRow([['slide',PM_NAMES.slide],['sim',PM_NAMES.sim],['cover',PM_NAMES.cover],['shift',PM_NAMES.shift]],cfg.pageMode,'rd-a-pm');
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">阅读器 上下滚动</h3>';
-  h+=btnRow([[1,'淡入开'],[0,'淡入关']],cfg.scrollFade?1:0,'rd-a-sf');
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">时长</h3>';
-  h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><input type="range" class="rd-a-dur" min="200" max="1500" step="20" value="'+cfg.duration+'" style="flex:1;accent-color:#4a8fe0"><span class="rd-a-durv" style="min-width:60px;text-align:right;font-size:13px">'+cfg.duration+'ms</span></div>';
-  h+='<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">错开</h3>';
-  h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><input type="range" class="rd-a-stg" min="0" max="120" step="5" value="'+cfg.stagger+'" style="flex:1;accent-color:#4a8fe0"><span class="rd-a-stgv" style="min-width:60px;text-align:right;font-size:13px">'+cfg.stagger+'ms</span></div>';
-  h+='<div style="margin-top:20px"><button class="rd-a-reset" style="width:100%;height:42px;border-radius:8px;border:0;cursor:pointer;background:#2a2d34;color:#d7dae0;font-size:14px">恢复默认</button></div>';
-  h+='<div style="font-size:11px;opacity:.5;margin-top:14px;line-height:1.6">改动立即生效，切换页面/章节时体现</div>';
-  ov.innerHTML=h;
-  D.body.appendChild(ov);
+  try{
+    var old=D.getElementById('rd-anim-ov');
+    if(old&&old.parentNode)old.parentNode.removeChild(old);
+    var ov=D.createElement('div');
+    ov.id='rd-anim-ov';
+    ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:var(--rbg,#15161a);color:var(--rfg,#cdd0d5);z-index:2147483600;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px 40px;box-sizing:border-box;font:14px system-ui';
+    function btnRow(items,cur,cls){
+      var h='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+      for(var i=0;i<items.length;i++){
+        var it=items[i];
+        h+='<button class="'+cls+'" data-v="'+it[0]+'" style="flex:1;min-width:60px;height:38px;border-radius:8px;border:0;cursor:pointer;background:'+(cur==it[0]?'#4a8fe0':'#2a2d34')+';color:#fff;font-size:13px">'+it[1]+'</button>';
+      }
+      return h+'</div>';
+    }
+    function h3(t){return '<h3 style="font-size:13px;margin:14px 0 8px;opacity:.75;border-bottom:1px solid rgba(128,128,128,.2);padding-bottom:6px">'+t+'</h3>'}
+    var h='<div style="display:flex;align-items:center;margin-bottom:18px"><button class="rd-anim-close" style="background:none;border:0;color:inherit;font-size:24px;padding:0 12px 0 0">←</button><b>动画配置</b></div>';
+    h+=h3('总开关')+btnRow([[1,'开'],[0,'关']],cfg.enabled?1:0,'rd-a-toggle');
+    h+=h3('书库/书架 下拉')+btnRow([[1,'弹跳'],[2,'拉链'],[3,'纸片']],cfg.listMode,'rd-a-lm');
+    h+=h3('阅读器 左右翻页')+btnRow([['slide','滑动'],['sim','仿真'],['cover','覆盖'],['shift','平移']],cfg.pageMode,'rd-a-pm');
+    h+=h3('阅读器 上下滚动')+btnRow([[1,'淡入开'],[0,'淡入关']],cfg.scrollFade?1:0,'rd-a-sf');
+    h+=h3('时长')+'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><input type="range" class="rd-a-dur" min="200" max="1500" step="20" value="'+cfg.duration+'" style="flex:1;accent-color:#4a8fe0"><span class="rd-a-durv" style="min-width:60px;text-align:right;font-size:13px">'+cfg.duration+'ms</span></div>';
+    h+=h3('错开')+'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><input type="range" class="rd-a-stg" min="0" max="120" step="5" value="'+cfg.stagger+'" style="flex:1;accent-color:#4a8fe0"><span class="rd-a-stgv" style="min-width:60px;text-align:right;font-size:13px">'+cfg.stagger+'ms</span></div>';
+    h+='<div style="margin-top:20px"><button class="rd-a-reset" style="width:100%;height:42px;border-radius:8px;border:0;cursor:pointer;background:#2a2d34;color:#d7dae0;font-size:14px">恢复默认</button></div>';
+    h+='<div style="font-size:11px;opacity:.5;margin-top:14px;line-height:1.6">改动立即生效</div>';
+    ov.innerHTML=h;
+    D.body.appendChild(ov);
 
-  function refresh(){
-    if(ov.parentNode)ov.parentNode.removeChild(ov);
-    openAnimCfg();
-  }
-  ov.querySelector('.rd-anim-close').onclick=function(){if(ov.parentNode)ov.parentNode.removeChild(ov)};
-  ov.querySelectorAll('.rd-a-toggle').forEach(function(b){b.onclick=function(){cfg.enabled=+b.getAttribute('data-v');save();refresh()}});
-  ov.querySelectorAll('.rd-a-lm').forEach(function(b){b.onclick=function(){cfg.listMode=+b.getAttribute('data-v');save();refresh()}});
-  ov.querySelectorAll('.rd-a-pm').forEach(function(b){b.onclick=function(){cfg.pageMode=b.getAttribute('data-v');save();var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim();refresh()}});
-  ov.querySelectorAll('.rd-a-sf').forEach(function(b){b.onclick=function(){cfg.scrollFade=+b.getAttribute('data-v');save();refresh()}});
-  var dEl=ov.querySelector('.rd-a-dur'),dV=ov.querySelector('.rd-a-durv');
-  dEl.oninput=function(){cfg.duration=+this.value;dV.textContent=cfg.duration+'ms';save();var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim()};
-  var sEl=ov.querySelector('.rd-a-stg'),sV=ov.querySelector('.rd-a-stgv');
-  sEl.oninput=function(){cfg.stagger=+this.value;sV.textContent=cfg.stagger+'ms';save()};
-  ov.querySelector('.rd-a-reset').onclick=function(){
-    for(var kk in DEF)if(DEF.hasOwnProperty(kk))cfg[kk]=DEF[kk];
-    save();
-    var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim();
-    refresh();
-  };
+    function repaint(){
+      var groups=[['rd-a-toggle',cfg.enabled?1:0],['rd-a-lm',cfg.listMode],['rd-a-pm',cfg.pageMode],['rd-a-sf',cfg.scrollFade?1:0]];
+      for(var gi=0;gi<groups.length;gi++){
+        var cls=groups[gi][0],cur=groups[gi][1];
+        var bs=ov.querySelectorAll('.'+cls);
+        for(var bi=0;bi<bs.length;bi++){
+          var b=bs[bi];
+          var on=String(cur)===String(b.getAttribute('data-v'));
+          b.style.background=on?'#4a8fe0':'#2a2d34';
+        }
+      }
+    }
+
+    ov.querySelector('.rd-anim-close').onclick=function(){if(ov.parentNode)ov.parentNode.removeChild(ov)};
+    [].forEach.call(ov.querySelectorAll('.rd-a-toggle'),function(b){b.onclick=function(){cfg.enabled=+b.getAttribute('data-v');save();repaint()}});
+    [].forEach.call(ov.querySelectorAll('.rd-a-lm'),function(b){b.onclick=function(){cfg.listMode=+b.getAttribute('data-v');save();repaint()}});
+    [].forEach.call(ov.querySelectorAll('.rd-a-pm'),function(b){b.onclick=function(){cfg.pageMode=b.getAttribute('data-v');save();var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim();repaint()}});
+    [].forEach.call(ov.querySelectorAll('.rd-a-sf'),function(b){b.onclick=function(){cfg.scrollFade=+b.getAttribute('data-v');save();repaint()}});
+    var dEl=ov.querySelector('.rd-a-dur'),dV=ov.querySelector('.rd-a-durv');
+    if(dEl)dEl.oninput=function(){cfg.duration=+this.value;dV.textContent=cfg.duration+'ms';save();var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim()};
+    var sEl=ov.querySelector('.rd-a-stg'),sV=ov.querySelector('.rd-a-stgv');
+    if(sEl)sEl.oninput=function(){cfg.stagger=+this.value;sV.textContent=cfg.stagger+'ms';save()};
+    ov.querySelector('.rd-a-reset').onclick=function(){
+      for(var kk in DEF)if(DEF.hasOwnProperty(kk))cfg[kk]=DEF[kk];
+      save();
+      var A=Q('#A');if(A)A._rdHooked=0;setupReaderAnim();
+      ov.parentNode.removeChild(ov);
+      openAnimCfg();
+    };
+  }catch(e){alert('动画配置异常: '+e.message)}
 }
 
 function injectSettingBtn(){
