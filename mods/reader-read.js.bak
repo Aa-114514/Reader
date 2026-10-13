@@ -345,7 +345,7 @@ function readChapter(chUrl,catalog,bookUrl,initProg){
     c.l=1;if(!c.p)c.p=[];
     var cached=cacheGet(c.u);
     if(cached&&cached.length){
-      c.p=cached.slice();c.d=1;c.l=0;
+  c.p=cached.slice();c.d=1;c.l=0;c.f=1;
       var cbs0=c.cb.slice();c.cb=[];
       for(var kk=0;kk<cbs0.length;kk++)cbs0[kk](c.p);
       FH(c.u).then(function(h){var d=new DOMParser().parseFromString(h,'text/html');var cc=FC(d);if(!cc)return;var fresh=TP(HT(cc.innerHTML));var fl=EXF(d,c.u);if(fl.length)rest(c,fl).then(function(){if(fresh.length)c.p=fresh.slice();cacheSet(c.u,c.t,c.p)});}).catch(function(){});
