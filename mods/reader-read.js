@@ -2,6 +2,10 @@
 var rd=window.__rd;
 if(!rd){console.warn('[RDR-read] 主程序未启动');return}
 if(rd.modules.readChapter){console.warn('[RDR-read] 已加载');return}
+if(!rd.modules.siteLoaded){
+  alert('阅读模块需要前置：站点识别\n请先在模块管理里加载站点识别');
+  return;
+}
 var c=rd.ctx;
 var D=c.D,W=c.W,Q=c.Q,B=c.B,BK=c.BK,NAV=c.NAV,FAVBTN=c.FAVBTN,O=c.O,S=c.S;
 var SV=c.SV,toast=c.toast,LSV=c.LSV,escH=c.escH,err=c.err;
