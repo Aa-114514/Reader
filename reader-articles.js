@@ -425,11 +425,24 @@ function viewMods(){
     [].forEach.call(B.querySelectorAll('.mPersist'),function(el){el.onclick=function(){togglePersist(+el.getAttribute('data-i'))}});
     [].forEach.call(B.querySelectorAll('.mCopy'),function(el){el.onclick=function(){copyBookmark(+el.getAttribute('data-i'))}});
   }
-  function loadOne(i){
-    var m=window.RDR_LOADERS[i];if(!m)return;
-    if(!window.__rd){toast('RDR 未启动');return}
-    toast('加载 '+m.name+' …');
-    fetch(_base+m.file+'?t='+Date.now(),{cache:'no-store'})
+  function _checkReq(m){
+  if(!m.requires||!m.requires.length)return null;
+  var list=window.RDR_LOADERS||[];
+  for(var i=0;i<m.requires.length;i++){
+    var rid=m.requires[i],rm=null;
+    for(var j=0;j<list.length;j++)if(list[j].id===rid){rm=list[j];break}
+    var ok=false;try{ok=!!eval((rm&&rm.test)||'false')}catch(e){}
+    if(!ok)return (rm&&rm.name)||rid;
+  }
+  return null;
+}
+function loadOne(i){
+  var m=window.RDR_LOADERS[i];if(!m)return;
+  if(!window.__rd){toast('RDR 未启动');return}
+  var miss=_checkReq(m);
+  if(miss){alert('需要先加载前置模块：'+miss);return}
+  toast('加载 '+m.name+' …');
+  fetch(_base+m.file+'?t='+Date.now(),{cache:'no-store'})
       .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
       .then(function(t){
         var s=document.createElement('script');s.textContent=t;
