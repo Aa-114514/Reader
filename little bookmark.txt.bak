@@ -1,0 +1,180 @@
+javascript:(function(){
+if(window.__RDR__){window.__RDR__();return}
+var T0=Date.now(),T=T0;
+var U='Aa-114514/Reader';
+var FILES=['reader-interface.js','reader-sites.js','reader-structure.js','reader-extras.js'];
+var CDNS=[
+{n:'raw',       b:'https://raw.githubusercontent.com/'+U+'/main/'},
+{n:'jsdelivr',  b:'https://cdn.jsdelivr.net/gh/'+U+'@main/'},
+{n:'gcore',     b:'https://gcore.jsdelivr.net/gh/'+U+'@main/'},
+{n:'fastly',    b:'https://fastly.jsdelivr.net/gh/'+U+'@main/'},
+{n:'testingcf', b:'https://testingcf.jsdelivr.net/gh/'+U+'@main/'},
+{n:'statically',b:'https://cdn.statically.io/gh/'+U+'/main/'},
+{n:'ghproxy',   b:'https://ghproxy.net/https://raw.githubusercontent.com/'+U+'/main/'},
+{n:'gitmirror', b:'https://raw.gitmirror.com/'+U+'/main/'}
+];
+var log={};
+function lg(name,ver,ms,ok,err,src){
+  var rec=log[name]||(log[name]={n:name});
+  rec.v=ver||rec.v||'';
+  rec.ms=ms;
+  rec.ok=ok;
+  rec.e=err||'';
+  if(src)rec.src=src;
+}
+var bar=document.createElement('div');
+bar.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(20,20,24,.94);color:#fff;padding:18px 22px;border-radius:12px;z-index:2147483647;font:13px/1.6 system-ui;min-width:280px;box-shadow:0 8px 30px rgba(0,0,0,.6);pointer-events:none';
+bar.innerHTML='<div style="font-weight:600;margin-bottom:8px">📖 加载 RDR…</div><div class="btxt" style="font-size:12px;opacity:.75;margin-bottom:8px;min-height:16px">初始化…</div><div style="height:4px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden"><div class="bfill" style="height:100%;width:0;background:linear-gradient(90deg,#4a8fe0,#2bd9ff);transition:width .2s"></div></div><div class="bpct" style="font-size:11px;opacity:.5;margin-top:6px;text-align:right">0%</div>';
+(document.body||document.documentElement).appendChild(bar);
+var bfill=bar.querySelector('.bfill'),btxt=bar.querySelector('.btxt'),bpct=bar.querySelector('.bpct');
+function setP(p,t){bfill.style.width=p+'%';bpct.textContent=Math.round(p)+'%';if(t!==undefined)btxt.textContent=t}
+function done(){if(bar.parentNode)bar.parentNode.removeChild(bar)}
+function toast(msg){
+  var el=document.createElement('div');
+  el.style.cssText='position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:8px 16px;border-radius:8px;font:13px system-ui;z-index:2147483647;pointer-events:none';
+  el.textContent=msg;
+  (document.body||document.documentElement).appendChild(el);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},2200);
+}
+function cmpVer(a,b){if(!a)return -1;if(!b)return 1;var pa=a.split(/[.\-]/),pb=b.split(/[.\-]/);for(var i=0;i<Math.max(pa.length,pb.length);i++){var na=parseInt(pa[i]||0,10),nb=parseInt(pb[i]||0,10);if(na!==nb)return na-nb}return 0}
+function parseVer(txt){
+  if(!txt)return '';
+  var m=String(txt).match(/RDR_VER\s*=\s*['"]([^'"]+)['"]/);
+  return m?m[1]:'';
+}
+function loadAll(b,name){
+  var cnt=0,tot=FILES.length,t0=Date.now();
+  setP(8,'连接 '+name+'…');
+  return Promise.all(FILES.map(function(f){
+    return fetch(b+f+'?t='+T,{cache:'no-store'}).then(function(r){
+      if(!r.ok)throw new Error('HTTP '+r.status+' '+f);
+      return r.text();
+    }).then(function(t){
+      if(!t||t.length<100)throw new Error('空文件 '+f);
+      cnt++;setP(8+cnt/tot*82,'下载 '+f+' ('+cnt+'/'+tot+')');
+      return t;
+    });
+  })).then(function(arr){
+    var ms=Date.now()-t0;
+    var ver='';
+    for(var i=0;i<arr.length;i++){var v=parseVer(arr[i]);if(v){ver=v;break}}
+    return {arr:arr,name:name,ms:ms,ver:ver};
+  });
+}
+function probe(c){
+  var t0=Date.now(),doneF=false;
+  function rec(ver,ms,ok,err){
+    if(doneF)return;doneF=true;
+    lg(c.n,ver,ms,ok,err,'探针');
+  }
+  var pr=fetch(c.b+FILES[0]+'?t='+T,{cache:'no-store'}).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.text();
+  }).then(function(t){
+    if(!t||t.length<500)throw new Error('内容短');
+    var v=parseVer(t);
+    var ms=Date.now()-t0;
+    rec(v,ms,!!v,v?'':'无版本号');
+    return {n:c.n,b:c.b,ver:v,ms:ms,ok:!!v};
+  }).catch(function(e){
+    var ms=Date.now()-t0,err=String(e&&e.message||e);
+    rec('',ms,false,err);
+    return {n:c.n,b:c.b,ver:'',ms:ms,ok:false,err:err};
+  });
+  var to=new Promise(function(res){setTimeout(function(){rec('',5000,false,'超时');res({n:c.n,b:c.b,ver:'',ms:5000,ok:false,err:'超时'})},5000)});
+  return Promise.race([pr,to]);
+}
+function pickBest(all){
+  var ok=all.filter(function(r){return r&&r.ok});
+  var pool=ok.length?ok:all.filter(function(r){return r});
+  if(!pool.length)return null;
+  pool.sort(function(a,b){var d=cmpVer(b.ver,a.ver);if(d)return d;return a.ms-b.ms});
+  return pool[0];
+}
+function showLog(win){
+  var m='✔ RDR 已启动\n\n';
+  m+='选定 CDN: '+win.n+'\n';
+  m+='拉取版本: '+(win.ver||'未标注')+'\n';
+  m+='启动耗时: '+(Date.now()-T0)+'ms\n\n';
+  m+='各 CDN 响应:\n';
+  var order=CDNS.map(function(c){return c.n});
+  var maxN=0;
+  order.forEach(function(n){if(n.length>maxN)maxN=n.length});
+  function pad(s){s=String(s);while(s.length<maxN)s+=' ';return s}
+  order.forEach(function(n){
+    var r=log[n];
+    if(!r){m+='? '+pad(n)+'  (未响应)\n';return}
+    var mk=(n===win.n)?'⭐':(r.ok?'   ':'✗  ');
+    var v=r.v||'--';
+    if(r.ok)m+=mk+pad(n)+'  ver='+v+'  '+r.ms+'ms\n';
+    else m+=mk+pad(n)+'  ver=--  '+r.ms+'ms  '+(r.e||'')+'\n';
+  });
+  alert(m);
+}
+var allProbes=Promise.all(CDNS.map(probe));
+var injected=false;
+function doInject(res){
+  if(injected)return;
+  injected=true;
+  setP(94,'注入脚本…');
+  var s=document.createElement('script');
+  s.textContent=res.arr.join('\n');
+  (document.head||document.documentElement).appendChild(s);
+  try{
+    localStorage.setItem('RDR_BEST_CDN',res.name);
+    localStorage.setItem('RDR_BEST_TS',String(Date.now()));
+  }catch(e){}
+  setP(100,'✔ 完成');
+  var cost=Date.now()-T0;
+  lg(res.name,res.ver,res.ms,true,'','已注入');
+  setTimeout(function(){
+    done();
+    toast('✔ RDR 已启动（'+res.name+' · ver='+(res.ver||'未标注')+' · '+cost+'ms）');
+    allProbes.then(function(){
+      setTimeout(function(){showLog(res)},120);
+    });
+  },150);
+}
+function fallbackFromProbes(){
+  allProbes.then(function(all){
+    if(injected)return;
+    var win=pickBest(all);
+    if(!win){done();alert('RDR 加载失败：所有 CDN 均不可用');return}
+    setP(20,'选定 '+win.n+'（ver='+(win.ver||'未标注')+' · '+win.ms+'ms）');
+    loadAll(win.b,win.n).then(doInject).catch(function(e){
+      done();alert('RDR 加载失败：'+(e&&e.message||e));
+    });
+  });
+}
+var lastBest=null,lastTs=0;
+try{
+  lastBest=localStorage.getItem('RDR_BEST_CDN');
+  lastTs=parseInt(localStorage.getItem('RDR_BEST_TS')||'0',10);
+}catch(e){}
+var prefer=null;
+if(lastBest&&(Date.now()-lastTs)<6*3600*1000){
+  for(var i=0;i<CDNS.length;i++)if(CDNS[i].n===lastBest){prefer=CDNS[i];break}
+}
+if(prefer){
+  setP(5,'优先 '+prefer.n+'（上次最优）');
+  var settled=false;
+  var tm=setTimeout(function(){
+    if(settled||injected)return;
+    settled=true;
+    setP(15,'优选慢，切换…');
+    fallbackFromProbes();
+  },3000);
+  loadAll(prefer.b,prefer.n).then(function(res){
+    if(settled||injected)return;
+    settled=true;clearTimeout(tm);
+    doInject(res);
+  }).catch(function(){
+    if(settled||injected)return;
+    settled=true;clearTimeout(tm);
+    setP(15,'优选失败，切换…');
+    fallbackFromProbes();
+  });
+}else{
+  fallbackFromProbes();
+}
+})();
