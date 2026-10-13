@@ -2,6 +2,10 @@
 var rd=window.__rd;
 if(!rd){return}
 if(rd.modules.animLoaded){return}
+if(!rd.modules.readChapter){
+  alert('动画模块需要前置：阅读模块\n请先在模块管理里加载阅读模块');
+  return;
+}
 rd.modules.animLoaded=1;
 var c=rd.ctx,D=c.D,W=c.W,Q=c.Q,O=c.O;
 
