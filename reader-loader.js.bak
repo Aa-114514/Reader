@@ -29,5 +29,14 @@ window.RDR_LOADERS=[
     test:'window.__rd&&window.__rd.modules.viewFeed',
     nav:['feed'],
     unload:'delete window.__rd.modules.viewFeed;delete window.__rd.modules.viewFeedList;delete window.__rd.modules.feedList;delete window.__rd.modules.feedSave;'
-  }
+  },
+  {
+  id:'anim',
+  name:'切换动画',
+  desc:'界面切换时元素从四周飞入；阅读器文字拆分为单字飞入',
+  file:'reader-anim.js',
+  test:'window.__rd&&window.__rd.modules.animLoaded',
+  nav:[],
+  unload:''
+}
 ];
